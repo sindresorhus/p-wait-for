@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
 import timeSpan from 'time-span';
-import m from './';
+import m from '.';
 
 const fixture = Symbol('unicorn');
 

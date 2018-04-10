@@ -1,17 +1,17 @@
 'use strict';
+const nonBooleanError = new TypeError('Expected condition to return a boolean');
+
 module.exports = (condition, interval) => new Promise((resolve, reject) => {
 	interval = typeof interval === 'number' ? interval : 20;
 
 	const check = () => {
-		Promise.resolve().then(condition).then(val => {
-			if (typeof val !== 'boolean') {
-				throw new TypeError('Expected condition to return a boolean');
-			}
-
+		Promise.resolve(condition()).then(val => {
 			if (val === true) {
 				resolve();
-			} else {
+			} else if (val === false) {
 				setTimeout(check, interval);
+			} else {
+				throw nonBooleanError;
 			}
 		}).catch(reject);
 	};
