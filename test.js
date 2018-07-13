@@ -21,7 +21,7 @@ test('Will wait not longer than `timeout`ms before rejecting', async t => {
 	const end = timeSpan();
 	const ms = 200;
 	const maxWait = 100;
-	await t.throws(m(() => delay(ms).then(() => true), 20, {timeout: maxWait}));
+	await t.throws(m(() => delay(ms).then(() => true), {interval: 20, timeout: maxWait}));
 	const timeTaken = end();
 	t.true(timeTaken < ms);
 	t.true(timeTaken > (maxWait - 20));

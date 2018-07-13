@@ -2,13 +2,14 @@
 const pTimeout = require('p-timeout');
 
 module.exports = (condition, opts) => {
-	if (typeof opts === 'number') opts = { interval: opts };
+	if (typeof opts === 'number') {
+		opts = {interval: opts};
+	}
 	opts = Object.assign({
 		interval: 20,
 		timeout: Infinity
 	}, opts);
 	const promise = new Promise((resolve, reject) => {
-
 		const check = () => {
 			Promise.resolve().then(condition).then(val => {
 				if (typeof val !== 'boolean') {
