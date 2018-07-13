@@ -1,9 +1,13 @@
 'use strict';
 const pTimeout = require('p-timeout');
 
-module.exports = (condition, interval, opts) => {
+module.exports = (condition, opts) => {
+	if (typeof opts === 'number') opts = { interval: opts };
+	opts = Object.assign({
+		interval: 20,
+		timeout: Infinity
+	}, opts);
 	const promise = new Promise((resolve, reject) => {
-		interval = typeof interval === 'number' ? interval : 20;
 
 		const check = () => {
 			Promise.resolve().then(condition).then(val => {
@@ -14,7 +18,7 @@ module.exports = (condition, interval, opts) => {
 				if (val === true) {
 					resolve();
 				} else {
-					setTimeout(check, interval);
+					setTimeout(check, opts.interval);
 				}
 			}).catch(err => {
 				reject(err);
@@ -24,7 +28,7 @@ module.exports = (condition, interval, opts) => {
 		check();
 	});
 
-	if (opts && opts.timeout && typeof opts.timeout === 'number') {
+	if (opts.timeout !== Infinity) {
 		return pTimeout(promise, opts.timeout);
 	}
 
