@@ -43,7 +43,7 @@ Expected to return a `boolean` or a `Promise` for a `boolean`.
 Type: `number`<br>
 Default: `20`
 
-Number of milliseconds to wait before retrying `condition`.  You can also pass a number in place of the options object.
+Number of milliseconds to wait before retrying `condition`.  You can also pass a number in place of the options object to set the interval.
 
 ##### timeout
 
