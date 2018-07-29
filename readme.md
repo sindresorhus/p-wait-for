@@ -26,7 +26,7 @@ pWaitFor(() => pathExists('unicorn.png')).then(() => {
 
 ## API
 
-### pWaitFor(condition, [options || interval])
+### pWaitFor(condition, [options])
 
 Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
 

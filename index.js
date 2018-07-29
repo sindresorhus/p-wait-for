@@ -2,9 +2,6 @@
 const pTimeout = require('p-timeout');
 
 module.exports = (condition, opts) => {
-	if (typeof opts === 'number') {
-		opts = {interval: opts};
-	}
 	opts = Object.assign({
 		interval: 20,
 		timeout: Infinity
