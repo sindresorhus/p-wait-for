@@ -1,20 +1,34 @@
 'use strict';
-module.exports = (condition, interval) => new Promise((resolve, reject) => {
-	interval = typeof interval === 'number' ? interval : 20;
+const pTimeout = require('p-timeout');
 
-	const check = () => {
-		Promise.resolve().then(condition).then(val => {
-			if (typeof val !== 'boolean') {
-				throw new TypeError('Expected condition to return a boolean');
-			}
+module.exports = (condition, opts) => {
+	opts = Object.assign({
+		interval: 20,
+		timeout: Infinity
+	}, opts);
+	const promise = new Promise((resolve, reject) => {
+		const check = () => {
+			Promise.resolve().then(condition).then(val => {
+				if (typeof val !== 'boolean') {
+					throw new TypeError('Expected condition to return a boolean');
+				}
 
-			if (val === true) {
-				resolve();
-			} else {
-				setTimeout(check, interval);
-			}
-		}).catch(reject);
-	};
+				if (val === true) {
+					resolve();
+				} else {
+					setTimeout(check, opts.interval);
+				}
+			}).catch(err => {
+				reject(err);
+			});
+		};
 
-	check();
-});
+		check();
+	});
+
+	if (opts.timeout !== Infinity) {
+		return pTimeout(promise, opts.timeout);
+	}
+
+	return promise;
+};

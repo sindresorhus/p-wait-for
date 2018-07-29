@@ -26,7 +26,7 @@ pWaitFor(() => pathExists('unicorn.png')).then(() => {
 
 ## API
 
-### pWaitFor(condition, [interval])
+### pWaitFor(condition, [options])
 
 Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
 
@@ -36,12 +36,21 @@ Type: `Function`
 
 Expected to return a `boolean` or a `Promise` for a `boolean`.
 
-#### interval
+#### options
+
+##### interval
 
 Type: `number`<br>
 Default: `20`
 
-Number of milliseconds to wait before retrying `condition`.
+Number of milliseconds to wait before retrying `condition`.  You can also pass a number in place of the options object to set the interval.
+
+##### timeout
+
+Type: `number`<br>
+Default: `Infinity`
+
+Number of milliseconds to wait before automatically rejecting.
 
 
 ## Related
