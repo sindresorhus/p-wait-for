@@ -8,7 +8,7 @@ Can be useful for polling.
 ## Install
 
 ```
-$ npm install --save p-wait-for
+$ npm install p-wait-for
 ```
 
 
@@ -18,9 +18,10 @@ $ npm install --save p-wait-for
 const pWaitFor = require('p-wait-for');
 const pathExists = require('path-exists');
 
-pWaitFor(() => pathExists('unicorn.png')).then(() => {
+(async () => {
+	await pWaitFor(() => pathExists('unicorn.png'));
 	console.log('Yay! The file now exists.');
-})
+})();
 ```
 
 
@@ -38,12 +39,14 @@ Expected to return a `boolean` or a `Promise` for a `boolean`.
 
 #### options
 
+Type: `Object`
+
 ##### interval
 
 Type: `number`<br>
 Default: `20`
 
-Number of milliseconds to wait before retrying `condition`.  You can also pass a number in place of the options object to set the interval.
+Number of milliseconds to wait before retrying `condition`.
 
 ##### timeout
 

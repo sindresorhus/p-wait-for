@@ -1,33 +1,35 @@
 'use strict';
 const pTimeout = require('p-timeout');
 
-module.exports = (condition, opts) => {
-	opts = Object.assign({
+module.exports = (condition, options) => {
+	options = Object.assign({
 		interval: 20,
 		timeout: Infinity
-	}, opts);
+	}, options);
+
 	const promise = new Promise((resolve, reject) => {
 		const check = () => {
-			Promise.resolve().then(condition).then(val => {
-				if (typeof val !== 'boolean') {
-					throw new TypeError('Expected condition to return a boolean');
-				}
+			Promise.resolve()
+				.then(condition)
+				.then(value => {
+					if (typeof value !== 'boolean') {
+						throw new TypeError('Expected condition to return a boolean');
+					}
 
-				if (val === true) {
-					resolve();
-				} else {
-					setTimeout(check, opts.interval);
-				}
-			}).catch(err => {
-				reject(err);
-			});
+					if (value === true) {
+						resolve();
+					} else {
+						setTimeout(check, options.interval);
+					}
+				})
+				.catch(reject);
 		};
 
 		check();
 	});
 
-	if (opts.timeout !== Infinity) {
-		return pTimeout(promise, opts.timeout);
+	if (options.timeout !== Infinity) {
+		return pTimeout(promise, options.timeout);
 	}
 
 	return promise;
