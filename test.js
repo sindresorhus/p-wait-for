@@ -16,7 +16,7 @@ test('waits for condition', async t => {
 });
 
 test('rejects promise if condition rejects or throws', async t => {
-	await t.throws(pWaitFor(async () => {
+	await t.throws(pWaitFor(() => {
 		throw new Error('foo');
 	}));
 });
