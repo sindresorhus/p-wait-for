@@ -38,3 +38,23 @@ test('waits no longer than `timeout` milliseconds before rejecting', async t => 
 	t.true(timeTaken < ms);
 	t.true(timeTaken > (maxWait - 20));
 });
+
+test('stops performing checks if a timeout occurs', async t => {
+	let checksPerformed = 0;
+
+	await pWaitFor(
+		() => {
+			checksPerformed += 1;
+			return false;
+		},
+		{
+			interval: 10,
+			timeout: 200
+		}
+	)
+		.catch(async _ => {
+			const checksAtTimeout = checksPerformed;
+			await delay(100);
+			t.is(checksPerformed, checksAtTimeout);
+		});
+});

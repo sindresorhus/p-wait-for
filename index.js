@@ -7,6 +7,8 @@ module.exports = (condition, options) => {
 		timeout: Infinity
 	}, options);
 
+	let retryTimeout;
+
 	const promise = new Promise((resolve, reject) => {
 		const check = () => {
 			Promise.resolve()
@@ -19,7 +21,7 @@ module.exports = (condition, options) => {
 					if (value === true) {
 						resolve();
 					} else {
-						setTimeout(check, options.interval);
+						retryTimeout = setTimeout(check, options.interval);
 					}
 				})
 				.catch(reject);
@@ -29,7 +31,13 @@ module.exports = (condition, options) => {
 	});
 
 	if (options.timeout !== Infinity) {
-		return pTimeout(promise, options.timeout);
+		return pTimeout(promise, options.timeout)
+			.catch(error => {
+				if (retryTimeout) {
+					clearTimeout(retryTimeout);
+				}
+				throw error;
+			});
 	}
 
 	return promise;
