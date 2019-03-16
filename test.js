@@ -16,7 +16,7 @@ test('waits for condition', async t => {
 });
 
 test('rejects promise if condition rejects or throws', async t => {
-	await t.throws(pWaitFor(() => {
+	await t.throwsAsync(pWaitFor(() => {
 		throw new Error('foo');
 	}));
 });
@@ -26,7 +26,7 @@ test('waits no longer than `timeout` milliseconds before rejecting', async t => 
 	const ms = 200;
 	const maxWait = 100;
 
-	await t.throws(pWaitFor(async () => {
+	await t.throwsAsync(pWaitFor(async () => {
 		await delay(ms);
 		return true;
 	}, {
