@@ -35,7 +35,7 @@ Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `c
 
 Type: `Function`
 
-Expected to return a `boolean` or a `Promise` for a `boolean`.
+Expected to return `Promise<boolean> | boolean`.
 
 #### options
 

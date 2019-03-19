@@ -17,8 +17,18 @@ export interface Options {
 /**
 Wait for a condition to be true.
 
-@param condition - Expected to return a `boolean` or a `Promise` for a `boolean`.
-@returns Resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
+@returns A promise that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
+
+@example
+```
+import pWaitFor from 'p-wait-for';
+import pathExists from 'path-exists';
+
+(async () => {
+	await pWaitFor(() => pathExists('unicorn.png'));
+	console.log('Yay! The file now exists.');
+})();
+```
 */
 export default function pWaitFor(
 	condition: () => PromiseLike<boolean> | boolean,
