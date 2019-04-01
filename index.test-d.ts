@@ -1,5 +1,5 @@
-import {expectType} from 'tsd-check';
-import pWaitFor from '.';
+import {expectType} from 'tsd';
+import pWaitFor = require('.');
 
 expectType<Promise<void>>(pWaitFor(() => false));
 expectType<Promise<void>>(pWaitFor(() => Promise.resolve(false)));
