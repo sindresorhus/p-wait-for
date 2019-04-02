@@ -48,4 +48,5 @@ const pWaitFor = async (condition, options) => {
 };
 
 module.exports = pWaitFor;
+// TODO: Remove this for the next major release
 module.exports.default = pWaitFor;
