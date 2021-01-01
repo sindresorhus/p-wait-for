@@ -4,13 +4,11 @@
 
 Can be useful for polling.
 
-
 ## Install
 
 ```
 $ npm install p-wait-for
 ```
-
 
 ## Usage
 
@@ -24,10 +22,9 @@ const pathExists = require('path-exists');
 })();
 ```
 
-
 ## API
 
-### pWaitFor(condition, [options])
+### pWaitFor(condition, options?)
 
 Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
 
@@ -39,18 +36,18 @@ Expected to return `Promise<boolean> | boolean`.
 
 #### options
 
-Type: `Object`
+Type: `object`
 
 ##### interval
 
-Type: `number`<br>
+Type: `number`\
 Default: `20`
 
 Number of milliseconds to wait before retrying `condition`.
 
 ##### timeout
 
-Type: `number`<br>
+Type: `number`\
 Default: `Infinity`
 
 Number of milliseconds to wait before automatically rejecting.
@@ -68,8 +65,3 @@ Useful for when the check, if run immediately, would likely return `false`. In t
 
 - [p-whilst](https://github.com/sindresorhus/p-whilst) - Calls a function repeatedly while a condition returns true and then resolves the promise
 - [More…](https://github.com/sindresorhus/promise-fun)
-
-
-## License
-
-MIT © [Sindre Sorhus](https://sindresorhus.com)

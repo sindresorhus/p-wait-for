@@ -4,10 +4,11 @@
 	"description": "Wait for a condition to be true",
 	"license": "MIT",
 	"repository": "sindresorhus/p-wait-for",
+	"funding": "https://github.com/sponsors/sindresorhus",
 	"author": {
 		"name": "Sindre Sorhus",
 		"email": "sindresorhus@gmail.com",
-		"url": "sindresorhus.com"
+		"url": "https://sindresorhus.com"
 	},
 	"engines": {
 		"node": ">=8"
