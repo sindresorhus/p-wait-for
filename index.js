@@ -5,6 +5,7 @@ const pWaitFor = async (condition, options) => {
 	options = {
 		interval: 20,
 		timeout: Infinity,
+		leadingCheck: true,
 		...options
 	};
 
@@ -29,7 +30,11 @@ const pWaitFor = async (condition, options) => {
 			}
 		};
 
-		check();
+		if (options.leadingCheck) {
+			check();
+		} else {
+			retryTimeout = setTimeout(check, options.interval);
+		}
 	});
 
 	if (options.timeout !== Infinity) {

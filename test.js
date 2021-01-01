@@ -58,3 +58,17 @@ test('stops performing checks if a timeout occurs', async t => {
 			t.is(checksPerformed, checksAtTimeout);
 		});
 });
+
+test('does not perform a leading check', async t => {
+	const ms = 200;
+	const end = timeSpan();
+
+	await pWaitFor(async () => {
+		return true;
+	}, {
+		interval: ms,
+		leadingCheck: false
+	});
+
+	t.true(end() > (ms - 20));
+})

@@ -13,6 +13,15 @@ declare namespace pWaitFor {
 		@default Infinity
 		*/
 		readonly timeout?: number;
+
+		/**
+		Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
+
+		Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `leadingCheck` to `false`.
+
+		@default true
+		*/
+		readonly leadingCheck?: boolean;
 	}
 }
 
