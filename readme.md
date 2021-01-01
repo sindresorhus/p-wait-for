@@ -1,4 +1,4 @@
-# p-wait-for [![Build Status](https://travis-ci.org/sindresorhus/p-wait-for.svg?branch=master)](https://travis-ci.org/sindresorhus/p-wait-for)
+# p-wait-for
 
 > Wait for a condition to be true
 
