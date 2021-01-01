@@ -63,9 +63,7 @@ test('does not perform a leading check', async t => {
 	const ms = 200;
 	const end = timeSpan();
 
-	await pWaitFor(async () => {
-		return true;
-	}, {
+	await pWaitFor(async () => true, {
 		interval: ms,
 		leadingCheck: false
 	});
