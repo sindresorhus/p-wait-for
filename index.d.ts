@@ -17,11 +17,11 @@ declare namespace pWaitFor {
 		/**
 		Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
 
-		Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `leadingCheck` to `false`.
+		Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `before` to `false`.
 
 		@default true
 		*/
-		readonly leadingCheck?: boolean;
+		readonly before?: boolean;
 	}
 }
 
