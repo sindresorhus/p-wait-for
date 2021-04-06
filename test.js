@@ -65,7 +65,7 @@ test('does not perform a leading check', async t => {
 
 	await pWaitFor(async () => true, {
 		interval: ms,
-		leadingCheck: false
+		before: false
 	});
 
 	t.true(end() > (ms - 20));

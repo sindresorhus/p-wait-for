@@ -52,14 +52,14 @@ Default: `Infinity`
 
 Number of milliseconds to wait before automatically rejecting.
 
-##### leadingCheck
+##### before
 
 Type: `boolean`\
 Default: `true`
 
 Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
 
-Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `leadingCheck` to `false`.
+Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `before` to `false`.
 
 ## Related
 
