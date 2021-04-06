@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
 import timeSpan from 'time-span';
-import pWaitFor from '.';
+import pWaitFor from './index.js';
 
 test('waits for condition', async t => {
 	const ms = 200;

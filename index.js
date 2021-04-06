@@ -1,13 +1,11 @@
-'use strict';
-const pTimeout = require('p-timeout');
+import pTimeout from 'p-timeout';
 
-const pWaitFor = async (condition, options) => {
-	options = {
-		interval: 20,
-		timeout: Infinity,
-		before: true,
-		...options
-	};
+export default async function pWaitFor(condition, options = {}) {
+	const {
+		interval = 20,
+		timeout = Number.POSITIVE_INFINITY,
+		before = true
+	} = options;
 
 	let retryTimeout;
 
@@ -23,23 +21,23 @@ const pWaitFor = async (condition, options) => {
 				if (value === true) {
 					resolve();
 				} else {
-					retryTimeout = setTimeout(check, options.interval);
+					retryTimeout = setTimeout(check, interval);
 				}
 			} catch (error) {
 				reject(error);
 			}
 		};
 
-		if (options.before) {
+		if (before) {
 			check();
 		} else {
-			retryTimeout = setTimeout(check, options.interval);
+			retryTimeout = setTimeout(check, interval);
 		}
 	});
 
-	if (options.timeout !== Infinity) {
+	if (timeout !== Number.POSITIVE_INFINITY) {
 		try {
-			return await pTimeout(promise, options.timeout);
+			return await pTimeout(promise, timeout);
 		} catch (error) {
 			if (retryTimeout) {
 				clearTimeout(retryTimeout);
@@ -50,8 +48,4 @@ const pWaitFor = async (condition, options) => {
 	}
 
 	return promise;
-};
-
-module.exports = pWaitFor;
-// TODO: Remove this for the next major release
-module.exports.default = pWaitFor;
+}

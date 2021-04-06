@@ -13,13 +13,11 @@ $ npm install p-wait-for
 ## Usage
 
 ```js
-const pWaitFor = require('p-wait-for');
-const pathExists = require('path-exists');
+import pWaitFor from 'p-wait-for';
+import pathExists from 'path-exists';
 
-(async () => {
-	await pWaitFor(() => pathExists('unicorn.png'));
-	console.log('Yay! The file now exists.');
-})();
+await pWaitFor(() => pathExists('unicorn.png'));
+console.log('Yay! The file now exists.');
 ```
 
 ## API
