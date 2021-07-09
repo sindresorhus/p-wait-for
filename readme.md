@@ -48,7 +48,7 @@ Number of milliseconds to wait before retrying `condition`.
 Type: `number`\
 Default: `Infinity`
 
-Number of milliseconds to wait before automatically rejecting.
+Number of milliseconds to wait before automatically rejecting with a `TimeoutError`.
 
 ##### before
 
@@ -58,6 +58,10 @@ Default: `true`
 Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
 
 Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `before` to `false`.
+
+### TimeoutError
+
+Exposed for instance checking.
 
 ## Related
 

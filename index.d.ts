@@ -7,7 +7,7 @@ export interface Options {
 	readonly interval?: number;
 
 	/**
-	Number of milliseconds to wait before automatically rejecting.
+	Number of milliseconds to wait before automatically rejecting with a `TimeoutError`.
 
 	@default Infinity
 	*/
@@ -38,3 +38,5 @@ console.log('Yay! The file now exists.');
 ```
 */
 export default function pWaitFor(condition: () => PromiseLike<boolean> | boolean, options?: Options): Promise<void>;
+
+export {TimeoutError} from 'p-timeout';

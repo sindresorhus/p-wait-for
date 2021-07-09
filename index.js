@@ -49,3 +49,5 @@ export default async function pWaitFor(condition, options = {}) {
 
 	return promise;
 }
+
+export {TimeoutError} from 'p-timeout';
