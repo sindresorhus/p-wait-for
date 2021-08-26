@@ -31,7 +31,7 @@ Wait for a condition to be true.
 @example
 ```
 import pWaitFor from 'p-wait-for';
-import pathExists from 'path-exists';
+import {pathExists} from 'path-exists';
 
 await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
