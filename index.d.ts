@@ -1,6 +1,6 @@
 export interface Options {
 	/**
-	Number of milliseconds to wait before retrying `condition`.
+	Number of milliseconds to wait after `condition` resolves to `false` before calling it again.
 
 	@default 20
 	*/

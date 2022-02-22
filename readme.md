@@ -6,8 +6,8 @@ Can be useful for polling.
 
 ## Install
 
-```
-$ npm install p-wait-for
+```sh
+npm install p-wait-for
 ```
 
 ## Usage
@@ -41,7 +41,7 @@ Type: `object`
 Type: `number`\
 Default: `20`
 
-Number of milliseconds to wait before retrying `condition`.
+Number of milliseconds to wait after `condition` resolves to `false` before calling it again.
 
 ##### timeout
 
