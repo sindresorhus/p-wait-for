@@ -27,9 +27,7 @@ import {globby} from 'globby';
 
 const jsFiles = await pWaitFor(async resolve => {
   const paths = await globby(['*.js']);
-  if (paths.length > 0) {
-    return resolve(paths);
-  }
+  return paths.length > 0 ? resolve(paths) : false;
 });
 console.log(jsFiles);
 ```
@@ -41,9 +39,7 @@ import {globby} from 'globby';
 
 const tsFiles = await pWaitFor<string[]>(async resolve => {
   const paths = await globby(['*.ts']);
-  if (paths.length > 0) {
-    return resolve(paths);
-  }
+  return paths.length > 0 ? resolve(paths) : false;
 });
 // `tsFiles` is typed as a `string[]`
 console.log(tsFiles);
