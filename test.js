@@ -101,7 +101,7 @@ test('only resolves the value when condition callback returns true', async t => 
 	checksPerformed = 0;
 	const value2 = await pWaitFor(async resolve => {
 		if (checksPerformed === 1) {
-			return resolve();
+			return true;
 		}
 
 		resolve('foo');
