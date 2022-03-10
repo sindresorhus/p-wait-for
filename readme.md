@@ -25,7 +25,7 @@ Using the `resolve` callback:
 ```js
 import {globby} from 'globby';
 
-const jsFiles = await pWaitFor(async (resolve) => {
+const jsFiles = await pWaitFor(async resolve => {
   const paths = await globby(['*.js']);
   if (paths.length > 0) {
     return resolve(paths);
@@ -39,7 +39,7 @@ Use with TypeScript:
 ```ts
 import {globby} from 'globby';
 
-const tsFiles = await pWaitFor<string[]>(async (resolve) => {
+const tsFiles = await pWaitFor<string[]>(async resolve => {
   const paths = await globby(['*.ts']);
   if (paths.length > 0) {
     return resolve(paths);
