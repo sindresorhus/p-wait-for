@@ -70,3 +70,44 @@ test('does not perform a leading check', async t => {
 
 	t.true(end() > (ms - 20));
 });
+
+test('resolves with a value if the resolve callback is called', async t => {
+	const ms = 200;
+	const end = timeSpan();
+
+	const value = await pWaitFor(async resolve => {
+		await delay(ms);
+		return resolve('foo');
+	});
+
+	t.true(end() > (ms - 20));
+	t.is(value, 'foo');
+});
+
+test('only resolves the value when condition callback returns true', async t => {
+	let checksPerformed = 0;
+	const value = await pWaitFor(async resolve => {
+		if (checksPerformed === 1) {
+			return resolve('bar');
+		}
+
+		resolve('foo');
+		checksPerformed += 1;
+		return false;
+	});
+
+	t.is(value, 'bar');
+
+	checksPerformed = 0;
+	const value2 = await pWaitFor(async resolve => {
+		if (checksPerformed === 1) {
+			return resolve();
+		}
+
+		resolve('foo');
+		checksPerformed += 1;
+		return false;
+	});
+
+	t.is(value2, undefined);
+});

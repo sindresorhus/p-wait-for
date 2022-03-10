@@ -12,14 +12,21 @@ export default async function pWaitFor(condition, options = {}) {
 	const promise = new Promise((resolve, reject) => {
 		const check = async () => {
 			try {
-				const value = await condition();
+				let resolvedValue;
+				const resolveValue = value => {
+					resolvedValue = value;
+					// Allows for `return resolve('foo')`
+					return true;
+				};
 
-				if (typeof value !== 'boolean') {
+				const conditionValue = await condition(resolveValue);
+
+				if (typeof conditionValue !== 'boolean') {
 					throw new TypeError('Expected condition to return a boolean');
 				}
 
-				if (value === true) {
-					resolve();
+				if (conditionValue === true) {
+					resolve(resolvedValue);
 				} else {
 					retryTimeout = setTimeout(check, interval);
 				}

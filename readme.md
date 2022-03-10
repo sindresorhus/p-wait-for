@@ -20,17 +20,52 @@ await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
 ```
 
+Using the `resolve` callback:
+
+```js
+import {globby} from 'globby';
+
+const jsFiles = await pWaitFor(async (resolve) => {
+  const paths = await globby(['*.js']);
+  if (paths.length > 0) {
+    return resolve(paths);
+  }
+});
+console.log(jsFiles);
+```
+
+Use with TypeScript:
+
+```ts
+import {globby} from 'globby';
+
+const tsFiles = await pWaitFor<string[]>(async (resolve) => {
+  const paths = await globby(['*.ts']);
+  if (paths.length > 0) {
+    return resolve(paths);
+  }
+});
+// `tsFiles` is typed as a `string[]`
+console.log(tsFiles);
+```
+
 ## API
 
 ### pWaitFor(condition, options?)
 
-Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
+Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects. An optional `resolve` callback is passed to `condition` that can be called to return a value from `pWaitFor` once `condition` returns true.
 
-#### condition
+#### condition(resolve)
 
 Type: `Function`
 
 Expected to return `Promise<boolean> | boolean`.
+
+##### resolve(value)
+
+Type: `Function`
+
+Can be called with a value to return once the condition returns true. The `resolve` function always returns true so you can write `return resolve(value)`.
 
 #### options
 
