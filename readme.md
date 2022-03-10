@@ -65,7 +65,7 @@ Expected to return `Promise<boolean> | boolean`.
 
 Type: `Function`
 
-Can be called with a value to return once the condition returns true. The `resolve` function always returns true so you can write `return resolve(value)`.
+Can be called with a value to return from the `pWaitFor` function once the condition returns true. This function always returns true so you can write `return resolve(value)`.
 
 #### options
 
