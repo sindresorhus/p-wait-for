@@ -34,7 +34,7 @@ const jsFiles = await pWaitFor(async resolve => {
 console.log(jsFiles);
 ```
 
-Use with TypeScript:
+Usage with TypeScript:
 
 ```ts
 import {globby} from 'globby';
