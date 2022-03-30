@@ -99,7 +99,7 @@ test('only resolves the value when the first value of the array is true', async 
 });
 
 test('throws on invalid return value', async t => {
-	await t.throwsAsync( pWaitFor(() => [false, false, false])
+	await t.throwsAsync(pWaitFor(() => [false, false, false])
 	);
 
 	await t.throwsAsync(
