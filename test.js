@@ -16,11 +16,9 @@ test('waits for condition', async t => {
 });
 
 test('rejects promise if condition rejects or throws', async t => {
-	await t.throwsAsync(
-		pWaitFor(() => {
-			throw new Error('foo');
-		})
-	);
+	await t.throwsAsync(pWaitFor(() => {
+		throw new Error('foo');
+	}));
 });
 
 test('waits no longer than `timeout` milliseconds before rejecting', async t => {
@@ -28,22 +26,17 @@ test('waits no longer than `timeout` milliseconds before rejecting', async t => 
 	const ms = 200;
 	const maxWait = 100;
 
-	await t.throwsAsync(
-		pWaitFor(
-			async () => {
-				await delay(ms);
-				return true;
-			},
-			{
-				interval: 20,
-				timeout: maxWait
-			}
-		)
-	);
+	await t.throwsAsync(pWaitFor(async () => {
+		await delay(ms);
+		return true;
+	}, {
+		interval: 20,
+		timeout: maxWait
+	}));
 
 	const timeTaken = end();
 	t.true(timeTaken < ms);
-	t.true(timeTaken > maxWait - 20);
+	t.true(timeTaken > (maxWait - 20));
 });
 
 test('stops performing checks if a timeout occurs', async t => {
@@ -58,11 +51,12 @@ test('stops performing checks if a timeout occurs', async t => {
 			interval: 10,
 			timeout: 200
 		}
-	).catch(async _ => {
-		const checksAtTimeout = checksPerformed;
-		await delay(100);
-		t.is(checksPerformed, checksAtTimeout);
-	});
+	)
+		.catch(async _ => {
+			const checksAtTimeout = checksPerformed;
+			await delay(100);
+			t.is(checksPerformed, checksAtTimeout);
+		});
 });
 
 test('does not perform a leading check', async t => {
@@ -74,7 +68,7 @@ test('does not perform a leading check', async t => {
 		before: false
 	});
 
-	t.true(end() > ms - 20);
+	t.true(end() > (ms - 20));
 });
 
 test('resolves with a value if an array is returned', async t => {
@@ -105,8 +99,7 @@ test('only resolves the value when the first value of the array is true', async 
 });
 
 test('throws on invalid return value', async t => {
-	await t.throwsAsync(
-		pWaitFor(() => [false, false, false])
+	await t.throwsAsync( pWaitFor(() => [false, false, false])
 	);
 
 	await t.throwsAsync(
