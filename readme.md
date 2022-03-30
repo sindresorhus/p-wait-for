@@ -45,7 +45,6 @@ const tsFiles = await pWaitFor(async () => {
 console.log(tsFiles);
 ```
 
->>>>>>> 2b859c3 (docs: update with optional array return value)
 ## API
 
 ### pWaitFor(condition, options?)
