@@ -12,7 +12,7 @@ test('waits for condition', async t => {
 		return true;
 	});
 
-	t.true(end() > ms - 20);
+	t.true(end() > (ms - 20));
 });
 
 test('rejects promise if condition rejects or throws', async t => {
@@ -80,7 +80,7 @@ test('resolves with a value if an array is returned', async t => {
 		return [true, 'foo'];
 	});
 
-	t.true(end() > ms - 20);
+	t.true(end() > (ms - 20));
 	t.is(value, 'foo');
 });
 
