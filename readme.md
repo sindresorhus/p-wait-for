@@ -56,7 +56,7 @@ Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `c
 
 Type: `Function`
 
-Expected to return either `Promise<boolean> | boolean` or `Promise<[boolean, T]> | [boolean, T]` where T is type of a value returned by `pWaitFor`.
+Expected to return either `Promise<boolean> | boolean` or `Promise<[boolean, T]> | [boolean, T]` where T is the type of the value returned by `pWaitFor`.
 
 #### options
 
