@@ -37,6 +37,9 @@ await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
 ```
 */
-export default function pWaitFor(condition: () => PromiseLike<boolean> | boolean, options?: Options): Promise<void>;
+export default function pWaitFor<T>(
+	condition: () => PromiseLike<boolean | [boolean, T]> | boolean | [boolean, T],
+	options?: Options
+): Promise<T>;
 
 export {TimeoutError} from 'p-timeout';

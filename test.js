@@ -12,13 +12,15 @@ test('waits for condition', async t => {
 		return true;
 	});
 
-	t.true(end() > (ms - 20));
+	t.true(end() > ms - 20);
 });
 
 test('rejects promise if condition rejects or throws', async t => {
-	await t.throwsAsync(pWaitFor(() => {
-		throw new Error('foo');
-	}));
+	await t.throwsAsync(
+		pWaitFor(() => {
+			throw new Error('foo');
+		}),
+	);
 });
 
 test('waits no longer than `timeout` milliseconds before rejecting', async t => {
@@ -26,17 +28,22 @@ test('waits no longer than `timeout` milliseconds before rejecting', async t => 
 	const ms = 200;
 	const maxWait = 100;
 
-	await t.throwsAsync(pWaitFor(async () => {
-		await delay(ms);
-		return true;
-	}, {
-		interval: 20,
-		timeout: maxWait
-	}));
+	await t.throwsAsync(
+		pWaitFor(
+			async () => {
+				await delay(ms);
+				return true;
+			},
+			{
+				interval: 20,
+				timeout: maxWait,
+			},
+		),
+	);
 
 	const timeTaken = end();
 	t.true(timeTaken < ms);
-	t.true(timeTaken > (maxWait - 20));
+	t.true(timeTaken > maxWait - 20);
 });
 
 test('stops performing checks if a timeout occurs', async t => {
@@ -49,14 +56,13 @@ test('stops performing checks if a timeout occurs', async t => {
 		},
 		{
 			interval: 10,
-			timeout: 200
-		}
-	)
-		.catch(async _ => {
-			const checksAtTimeout = checksPerformed;
-			await delay(100);
-			t.is(checksPerformed, checksAtTimeout);
-		});
+			timeout: 200,
+		},
+	).catch(async _ => {
+		const checksAtTimeout = checksPerformed;
+		await delay(100);
+		t.is(checksPerformed, checksAtTimeout);
+	});
 });
 
 test('does not perform a leading check', async t => {
@@ -65,8 +71,45 @@ test('does not perform a leading check', async t => {
 
 	await pWaitFor(async () => true, {
 		interval: ms,
-		before: false
+		before: false,
 	});
 
-	t.true(end() > (ms - 20));
+	t.true(end() > ms - 20);
+});
+
+test('resolves with a value if an array is returned', async t => {
+	const ms = 200;
+	const end = timeSpan();
+
+	const value = await pWaitFor(async () => {
+		await delay(ms);
+		return [true, 'foo'];
+	});
+
+	t.true(end() > ms - 20);
+	t.is(value, 'foo');
+});
+
+test('only resolves the value when the first value of the array is true', async t => {
+	let checksPerformed = 0;
+	const value = await pWaitFor(async () => {
+		if (checksPerformed === 1) {
+			return [true, 'bar'];
+		}
+
+		checksPerformed += 1;
+		return [false, 'foo'];
+	});
+
+	t.is(value, 'bar');
+});
+
+test('throws on invalid return value', async t => {
+	await t.throwsAsync(
+		pWaitFor(() => [false, false, false]),
+	);
+
+	await t.throwsAsync(
+		pWaitFor(() => 42),
+	);
 });

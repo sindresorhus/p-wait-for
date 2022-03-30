@@ -4,7 +4,7 @@ export default async function pWaitFor(condition, options = {}) {
 	const {
 		interval = 20,
 		timeout = Number.POSITIVE_INFINITY,
-		before = true
+		before = true,
 	} = options;
 
 	let retryTimeout;
@@ -14,12 +14,19 @@ export default async function pWaitFor(condition, options = {}) {
 			try {
 				const value = await condition();
 
-				if (typeof value !== 'boolean') {
-					throw new TypeError('Expected condition to return a boolean');
+				if (
+					typeof value !== 'boolean'
+					|| !(Array.isArray(value) && value.length === 2)
+				) {
+					throw new TypeError(
+						'Expected condition to return a boolean or an array of length 2',
+					);
 				}
 
-				if (value === true) {
+				if (typeof value === 'boolean' && value === true) {
 					resolve();
+				} else if (Array.isArray(value) && value[0] === true) {
+					resolve(value[1]);
 				} else {
 					retryTimeout = setTimeout(check, interval);
 				}
