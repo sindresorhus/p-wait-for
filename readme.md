@@ -25,7 +25,7 @@ Using an array as the return value:
 ```js
 import {globby} from 'globby';
 
-const jsFiles = await pWaitFor(async resolve => {
+const jsFiles = await pWaitFor(async () => {
   const paths = await globby(['*.js']);
   return [paths.length > 0, paths];
 });
@@ -37,7 +37,7 @@ Usage with TypeScript:
 ```ts
 import {globby} from 'globby';
 
-const tsFiles = await pWaitFor(async resolve => {
+const tsFiles = await pWaitFor(async () => {
   const paths = await globby(['*.ts']);
   return [paths.length > 0, paths];
 });
