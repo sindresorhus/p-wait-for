@@ -20,6 +20,32 @@ await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
 ```
 
+Using an array as the return value:
+
+```js
+import {globby} from 'globby';
+
+const jsFiles = await pWaitFor(async resolve => {
+  const paths = await globby(['*.js']);
+  return [paths.length > 0, paths];
+});
+console.log(jsFiles);
+```
+
+Usage with TypeScript:
+
+```ts
+import {globby} from 'globby';
+
+const tsFiles = await pWaitFor(async resolve => {
+  const paths = await globby(['*.ts']);
+  return [paths.length > 0, paths];
+});
+// `tsFiles` is typed as a `string[]`
+console.log(tsFiles);
+```
+
+>>>>>>> 2b859c3 (docs: update with optional array return value)
 ## API
 
 ### pWaitFor(condition, options?)
@@ -30,7 +56,7 @@ Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `c
 
 Type: `Function`
 
-Expected to return `Promise<boolean> | boolean`.
+Expected to return either `Promise<boolean> | boolean` or `Promise<[boolean, T]> | [boolean, T]` where T is type of a value returned by `pWaitFor`.
 
 #### options
 
