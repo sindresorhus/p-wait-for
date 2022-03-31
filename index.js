@@ -3,9 +3,10 @@ import pTimeout from 'p-timeout';
 const resolveValue = Symbol('resolveValue');
 
 export default async function pWaitFor(condition, options = {}) {
+	let timeout = options.timeout ?? Number.POSITIVE_INFINITY;
+
 	const {
 		interval = 20,
-		timeout = Number.POSITIVE_INFINITY,
 		before = true
 	} = options;
 
@@ -37,19 +38,28 @@ export default async function pWaitFor(condition, options = {}) {
 		}
 	});
 
-	if (timeout !== Number.POSITIVE_INFINITY) {
-		try {
-			return await pTimeout(promise, timeout);
-		} catch (error) {
-			if (retryTimeout) {
-				clearTimeout(retryTimeout);
-			}
-
-			throw error;
-		}
+	if (typeof timeout === 'number' && timeout === Number.POSITIVE_INFINITY) {
+		return promise;
 	}
 
-	return promise;
+	let customTimerOptions;
+	let timeoutMessage;
+
+	if (typeof timeout !== 'number') {
+		customTimerOptions = timeout.customTimers;
+		timeoutMessage = timeout.message;
+		timeout = timeout.milliseconds;
+	}
+
+	try {
+		return await pTimeout(promise, timeout, timeoutMessage, customTimerOptions);
+	} catch (error) {
+		if (retryTimeout) {
+			clearTimeout(retryTimeout);
+		}
+
+		throw error;
+	}
 }
 
 pWaitFor.resolveWith = value => ({[resolveValue]: value});

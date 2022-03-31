@@ -1,3 +1,31 @@
+export interface TimeoutOptions {
+	/**
+	Milliseconds before timing out.
+
+	Passing `Infinity` will cause it to never time out.
+
+	@default Infinity
+	*/
+	milliseconds?: number;
+
+	/**
+	Specify a custom error message or error.
+
+	If you do a custom error, it's recommended to sub-class `pTimeout.TimeoutError`.
+	*/
+	message?: string | Error;
+
+	/**
+	Custom implementations for the `setTimeout` and `clearTimeout` functions.
+
+	Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/).
+	*/
+	customTimers?: {
+		setTimeout: typeof global.setTimeout;
+		clearTimeout: typeof global.clearTimeout;
+	};
+}
+
 export interface Options {
 	/**
 	Number of milliseconds to wait after `condition` resolves to `false` before calling it again.
@@ -11,7 +39,7 @@ export interface Options {
 
 	@default Infinity
 	*/
-	readonly timeout?: number;
+	readonly timeout?: number | TimeoutOptions;
 
 	/**
 	Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
