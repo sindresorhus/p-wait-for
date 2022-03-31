@@ -3,7 +3,7 @@ import pTimeout from 'p-timeout';
 const resolveValue = Symbol('resolveValue');
 
 export default async function pWaitFor(condition, options = {}) {
-	let timeout = options.timeout ?? Number.POSITIVE_INFINITY;
+	let timeout = options.timeout ? options.timeout : Number.POSITIVE_INFINITY;
 
 	const {
 		interval = 20,
