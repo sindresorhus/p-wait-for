@@ -45,12 +45,12 @@ Number of milliseconds to wait after `condition` resolves to `false` before call
 
 ##### timeout
 
-Type: `number | TimeoutOption`\
+Type: `number | TimeoutOptions`\
 Default: `Infinity`
 
 Number of milliseconds to wait before automatically rejecting with a `TimeoutError`.
 
-You can customize the `TimeoutError` by specifying `TimeoutOption` instead of `number`.
+You can customize the `TimeoutError` by specifying `TimeoutOptions` instead of `number`.
 
 ```js
 import pWaitFor from 'p-wait-for';
