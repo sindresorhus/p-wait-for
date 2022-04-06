@@ -70,3 +70,9 @@ test('does not perform a leading check', async t => {
 
 	t.true(end() > (ms - 20));
 });
+
+test('resolveWith()', async t => {
+	t.true(await pWaitFor(resolveWith => {
+		return resolveWith(true);
+	}));
+});

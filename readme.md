@@ -59,6 +59,25 @@ Whether to run the check immediately rather than starting by waiting `interval` 
 
 Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `before` to `false`.
 
+#### resolveWith(value)
+
+Resolve the main promise with a custom value.
+
+```js
+import pWaitFor from 'p-wait-for';
+import pathExists from 'path-exists';
+
+const path = await pWaitFor(async resolveWith => {
+	const path = getPath();
+
+	if (await pathExists(path)) {
+		return resolveWith(path);
+	}
+});
+
+console.log(path);
+```
+
 ### TimeoutError
 
 Exposed for instance checking.

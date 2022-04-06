@@ -23,6 +23,13 @@ export interface Options {
 	readonly before?: boolean;
 }
 
+// https://github.com/sindresorhus/type-fest/blob/043b732bf02c2b700245aa6501116a6646d50732/source/opaque.d.ts
+declare const resolveValueSymbol: unique symbol;
+
+interface ResolveValue<ResolveValueType> {
+	[resolveValueSymbol]: ResolveValueType;
+}
+
 /**
 Wait for a condition to be true.
 
@@ -37,6 +44,6 @@ await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
 ```
 */
-export default function pWaitFor(condition: () => PromiseLike<boolean> | boolean, options?: Options): Promise<void>;
+export default function pWaitFor<ResolveValueType>(condition: (resolveWith: (value: ResolveValueType) => ResolveValue<ResolveValueType>) => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
 
 export {TimeoutError} from 'p-timeout';

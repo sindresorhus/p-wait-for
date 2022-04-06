@@ -1,5 +1,11 @@
 import pTimeout from 'p-timeout';
 
+const resolveValue = Symbol('resolveValue');
+
+function resolveWith(value) {
+	return {[resolveValue]: value};
+}
+
 export default async function pWaitFor(condition, options = {}) {
 	const {
 		interval = 20,
@@ -12,13 +18,13 @@ export default async function pWaitFor(condition, options = {}) {
 	const promise = new Promise((resolve, reject) => {
 		const check = async () => {
 			try {
-				const value = await condition();
+				const value = await condition(resolveWith);
 
-				if (typeof value !== 'boolean') {
+				if (typeof value === 'object' && value[resolveValue]) {
+					resolve(value[resolveValue]);
+				} else if (typeof value !== 'boolean') {
 					throw new TypeError('Expected condition to return a boolean');
-				}
-
-				if (value === true) {
+				} else if (value === true) {
 					resolve();
 				} else {
 					retryTimeout = setTimeout(check, interval);
