@@ -44,6 +44,6 @@ await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
 ```
 */
-export default function pWaitFor<ResolveValueType>(condition: (resolveWith: (value: ResolveValueType) => ResolveValue<ResolveValueType>) => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
+export default function pWaitFor<ResolveValueType>(condition: (resolveWith: <ValueType>(value: ValueType) => ResolveValue<ValueType>) => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
 
 export {TimeoutError} from 'p-timeout';
