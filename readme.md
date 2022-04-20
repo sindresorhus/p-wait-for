@@ -50,7 +50,7 @@ Default: `Infinity`
 
 Number of milliseconds to wait before automatically rejecting with a `TimeoutError`.
 
-You can customize the `TimeoutError` by specifying `TimeoutOptions` instead of `number`.
+You can customize the timeout `Error` by specifying `TimeoutOptions`.
 
 ```js
 import pWaitFor from 'p-wait-for';
@@ -59,12 +59,13 @@ import {pathExists} from 'path-exists';
 await pWaitFor(() => pathExists('unicorn.png'), {
 	timeout: {
 		milliseconds: 100,
-		message: MyError('Time’s up!'),
+		message: new MyError('Time’s up!'),
 		customTimers: {
 			setTimeout: requestAnimationFrame
 		}
 	}
 });
+
 console.log('Yay! The file now exists.');
 ```
 
@@ -84,7 +85,7 @@ Default: `'Promise timed out after 50 milliseconds'`
 
 Specify a custom error message or error.
 
-If you do a custom error, it's recommended to sub-class `pTimeout.TimeoutError`.
+If you do a custom error, it's recommended to sub-class `TimeoutError`.
 
 ###### customTimers
 

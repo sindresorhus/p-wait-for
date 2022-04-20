@@ -11,7 +11,7 @@ export interface TimeoutOptions {
 	/**
 	Specify a custom error message or error.
 
-	If you do a custom error, it's recommended to sub-class `pTimeout.TimeoutError`.
+	If you do a custom error, it's recommended to sub-class `TimeoutError`.
 	*/
 	message?: string | Error;
 
@@ -21,8 +21,8 @@ export interface TimeoutOptions {
 	Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/).
 	*/
 	customTimers?: {
-		setTimeout: typeof global.setTimeout;
-		clearTimeout: typeof global.clearTimeout;
+		setTimeout: typeof globalThis.setTimeout;
+		clearTimeout: typeof globalThis.clearTimeout;
 	};
 }
 
@@ -37,7 +37,27 @@ export interface Options {
 	/**
 	Number of milliseconds to wait before automatically rejecting with a `TimeoutError`.
 
+	You can customize the timeout `Error` by specifying `TimeoutOptions`.
+
 	@default Infinity
+
+	@example
+	```js
+	import pWaitFor from 'p-wait-for';
+	import {pathExists} from 'path-exists';
+
+	await pWaitFor(() => pathExists('unicorn.png'), {
+		timeout: {
+			milliseconds: 100,
+			message: new MyError('Time’s up!'),
+			customTimers: {
+				setTimeout: requestAnimationFrame
+			}
+		}
+	});
+
+	console.log('Yay! The file now exists.');
+	```
 	*/
 	readonly timeout?: number | TimeoutOptions;
 
