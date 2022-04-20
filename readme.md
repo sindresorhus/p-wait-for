@@ -64,10 +64,10 @@ Useful for when the check, if run immediately, would likely return `false`. In t
 Resolve the main promise with a custom value.
 
 ```js
-import pWaitFor from 'p-wait-for';
+import pWaitFor, {resolveWith} from 'p-wait-for';
 import pathExists from 'path-exists';
 
-const path = await pWaitFor(async resolveWith => {
+const path = await pWaitFor(async () => {
 	const path = getPath();
 
 	if (await pathExists(path)) {

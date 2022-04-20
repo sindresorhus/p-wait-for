@@ -44,6 +44,27 @@ await pWaitFor(() => pathExists('unicorn.png'));
 console.log('Yay! The file now exists.');
 ```
 */
-export default function pWaitFor<ResolveValueType>(condition: (resolveWith: <ValueType>(value: ValueType) => ResolveValue<ValueType>) => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
+export default function pWaitFor<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
+
+/**
+Resolve the main promise with a custom value.
+
+@example
+```
+import pWaitFor, {resolveWith} from 'p-wait-for';
+import pathExists from 'path-exists';
+
+const path = await pWaitFor(async () => {
+	const path = getPath();
+
+	if (await pathExists(path)) {
+		return resolveWith(path);
+	}
+});
+
+console.log(path);
+```
+*/
+export function resolveWith<ValueType>(value: ValueType): ResolveValue<ValueType>;
 
 export {TimeoutError} from 'p-timeout';

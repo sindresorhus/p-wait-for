@@ -2,10 +2,6 @@ import pTimeout from 'p-timeout';
 
 const resolveValue = Symbol('resolveValue');
 
-function resolveWith(value) {
-	return {[resolveValue]: value};
-}
-
 export default async function pWaitFor(condition, options = {}) {
 	const {
 		interval = 20,
@@ -18,7 +14,7 @@ export default async function pWaitFor(condition, options = {}) {
 	const promise = new Promise((resolve, reject) => {
 		const check = async () => {
 			try {
-				const value = await condition(resolveWith);
+				const value = await condition();
 
 				if (typeof value === 'object' && value[resolveValue]) {
 					resolve(value[resolveValue]);
@@ -54,6 +50,10 @@ export default async function pWaitFor(condition, options = {}) {
 	}
 
 	return promise;
+}
+
+export function resolveWith(value) {
+	return {[resolveValue]: value};
 }
 
 export {TimeoutError} from 'p-timeout';
