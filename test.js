@@ -72,7 +72,5 @@ test('does not perform a leading check', async t => {
 });
 
 test('resolveWith()', async t => {
-	t.true(await pWaitFor(() => {
-		return resolveWith(true);
-	}));
+	t.true(await pWaitFor(() => resolveWith(true)));
 });
