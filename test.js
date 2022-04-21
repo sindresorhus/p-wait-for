@@ -1,7 +1,7 @@
 import test from 'ava';
 import delay from 'delay';
 import timeSpan from 'time-span';
-import pWaitFor, {resolveWith} from './index.js';
+import pWaitFor from './index.js';
 
 test('waits for condition', async t => {
 	const ms = 200;
@@ -72,5 +72,5 @@ test('does not perform a leading check', async t => {
 });
 
 test('resolveWith()', async t => {
-	t.true(await pWaitFor(() => resolveWith(true)));
+	t.true(await pWaitFor(() => pWaitFor.resolveWith(true)));
 });

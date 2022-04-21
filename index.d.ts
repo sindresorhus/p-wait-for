@@ -30,38 +30,42 @@ interface ResolveValue<ResolveValueType> {
 	[resolveValueSymbol]: ResolveValueType;
 }
 
-/**
-Wait for a condition to be true.
+declare const pWaitFor: {
+	/**
+	Wait for a condition to be true.
 
-@returns A promise that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
+	@returns A promise that resolves when `condition` returns `true`. Rejects if `condition` throws or returns a `Promise` that rejects.
 
-@example
-```
-import pWaitFor from 'p-wait-for';
-import {pathExists} from 'path-exists';
+	@example
+	```
+	import pWaitFor from 'p-wait-for';
+	import {pathExists} from 'path-exists';
 
-await pWaitFor(() => pathExists('unicorn.png'));
-console.log('Yay! The file now exists.');
-```
-*/
-export default function pWaitFor<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
+	await pWaitFor(() => pathExists('unicorn.png'));
+	console.log('Yay! The file now exists.');
+	```
+	*/
+	<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
 
-/**
-Resolve the main promise with a custom value.
+	/**
+	Resolve the main promise with a custom value.
 
-@example
-```
-import pWaitFor, {resolveWith} from 'p-wait-for';
-import pathExists from 'path-exists';
+	@example
+	```
+	import pWaitFor from 'p-wait-for';
+	import pathExists from 'path-exists';
 
-const path = await pWaitFor(async () => {
-	const path = getPath();
-	return await pathExists(path) && resolveWith(path);
-});
+	const path = await pWaitFor(async () => {
+		const path = getPath();
+		return await pathExists(path) && pWaitFor.resolveWith(path);
+	});
 
-console.log(path);
-```
-*/
-export function resolveWith<ValueType>(value: ValueType): ResolveValue<ValueType>;
+	console.log(path);
+	```
+	*/
+	resolveWith<ValueType>(value: ValueType): ResolveValue<ValueType>;
+};
+
+export default pWaitFor;
 
 export {TimeoutError} from 'p-timeout';

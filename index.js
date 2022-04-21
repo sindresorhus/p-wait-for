@@ -52,8 +52,6 @@ export default async function pWaitFor(condition, options = {}) {
 	return promise;
 }
 
-export function resolveWith(value) {
-	return {[resolveValue]: value};
-}
+pWaitFor.resolveWith = value => ({[resolveValue]: value});
 
 export {TimeoutError} from 'p-timeout';
