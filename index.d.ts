@@ -56,10 +56,7 @@ import pathExists from 'path-exists';
 
 const path = await pWaitFor(async () => {
 	const path = getPath();
-
-	if (await pathExists(path)) {
-		return resolveWith(path);
-	}
+	return await pathExists(path) && resolveWith(path);
 });
 
 console.log(path);
