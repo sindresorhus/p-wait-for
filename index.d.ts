@@ -1,6 +1,10 @@
+import {Options as pTimeoutOptions} from 'p-timeout';
+
 export interface TimeoutOptions {
 	/**
 	Milliseconds before timing out.
+
+	Error will be thrown if `pWaitFor` promise hasn't resolved/rejected until this `milliseconds`.
 
 	Passing `Infinity` will cause it to never time out.
 
@@ -20,10 +24,7 @@ export interface TimeoutOptions {
 
 	Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/).
 	*/
-	customTimers?: {
-		setTimeout: typeof globalThis.setTimeout;
-		clearTimeout: typeof globalThis.clearTimeout;
-	};
+	customTimers?: pTimeoutOptions['customTimers'];
 }
 
 export interface Options {
