@@ -38,7 +38,7 @@ export default async function pWaitFor(condition, options = {}) {
 		}
 	});
 
-	if (timeout === Number.POSITIVE_INFINITY) {
+	if (timeout === Infinity) {
 		return promise;
 	}
 
