@@ -43,7 +43,7 @@ export interface Options {
 	@default Infinity
 
 	@example
-	```js
+	```
 	import pWaitFor from 'p-wait-for';
 	import {pathExists} from 'path-exists';
 
