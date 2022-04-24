@@ -75,7 +75,7 @@ test('resolveWith()', async t => {
 	t.true(await pWaitFor(() => pWaitFor.resolveWith(true)));
 });
 
-test('Customize timeout error', async t => {
+test('timeout option - object', async t => {
 	class CustomizedTimeoutError extends Error {
 		constructor() {
 			super();
