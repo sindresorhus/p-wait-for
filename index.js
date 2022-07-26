@@ -53,7 +53,11 @@ export default async function pWaitFor(condition, options = {}) {
 	const customTimersOptions = customTimers ? {customTimers} : undefined;
 
 	try {
-		return await pTimeout(promise, timeoutMs, timeoutMessage, customTimersOptions);
+		return await pTimeout(promise, {
+			milliseconds: timeoutMs,
+			message: timeoutMessage,
+			customTimers: customTimersOptions
+		});
 	} catch (error) {
 		if (retryTimeout) {
 			clearTimeout(retryTimeout);

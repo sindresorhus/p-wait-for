@@ -56,12 +56,18 @@ You can customize the timeout `Error` by specifying `TimeoutOptions`.
 import pWaitFor from 'p-wait-for';
 import {pathExists} from 'path-exists';
 
+const originalSetTimeout = setTimeout;
+const originalClearTimeout = clearTimeout;
+
+sinon.useFakeTimers();
+
 await pWaitFor(() => pathExists('unicorn.png'), {
 	timeout: {
 		milliseconds: 100,
 		message: new MyError('Time’s up!'),
 		customTimers: {
-			setTimeout: requestAnimationFrame
+			setTimeout: originalSetTimeout,
+			clearTimeout: originalClearTimeout
 		}
 	}
 });
@@ -94,6 +100,28 @@ Type: `object` with function properties `setTimeout` and `clearTimeout`
 Custom implementations for the `setTimeout` and `clearTimeout` functions.
 
 Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/).
+
+###### fallback
+
+Type: `Function`
+
+Do something other than rejecting with an error on timeout.
+
+Example:
+
+```js
+import pWaitFor from 'p-wait-for';
+import {pathExists} from 'path-exists';
+
+await pWaitFor(() => pathExists('unicorn.png'), {
+	timeout: {
+		milliseconds: 50,
+		fallback: () => {
+			console.log('Time’s up! executed the fallback function!');
+		},
+	}
+});
+```
 
 ##### before
 

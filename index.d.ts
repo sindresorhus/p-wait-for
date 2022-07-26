@@ -1,33 +1,6 @@
-import {Options as pTimeoutOptions} from 'p-timeout';
+import {Options as TimeoutOptions} from 'p-timeout';
 
-export interface TimeoutOptions {
-	/**
-	Milliseconds before timing out.
-
-	Error will be thrown if `pWaitFor` promise hasn't resolved/rejected until this `milliseconds`.
-
-	Passing `Infinity` will cause it to never time out.
-
-	@default Infinity
-	*/
-	milliseconds?: number;
-
-	/**
-	Specify a custom error message or error.
-
-	If you do a custom error, it's recommended to sub-class `TimeoutError`.
-	*/
-	message?: string | Error;
-
-	/**
-	Custom implementations for the `setTimeout` and `clearTimeout` functions.
-
-	Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/).
-	*/
-	customTimers?: pTimeoutOptions['customTimers'];
-}
-
-export interface Options {
+export interface Options<ResolveValueType> {
 	/**
 	Number of milliseconds to wait after `condition` resolves to `false` before calling it again.
 
@@ -47,12 +20,18 @@ export interface Options {
 	import pWaitFor from 'p-wait-for';
 	import {pathExists} from 'path-exists';
 
+	const originalSetTimeout = setTimeout;
+	const originalClearTimeout = clearTimeout;
+
+	sinon.useFakeTimers();
+
 	await pWaitFor(() => pathExists('unicorn.png'), {
 		timeout: {
 			milliseconds: 100,
 			message: new MyError('Time’s up!'),
 			customTimers: {
-				setTimeout: requestAnimationFrame
+				setTimeout: originalSetTimeout,
+				clearTimeout: originalClearTimeout
 			}
 		}
 	});
@@ -60,7 +39,7 @@ export interface Options {
 	console.log('Yay! The file now exists.');
 	```
 	*/
-	readonly timeout?: number | TimeoutOptions;
+	readonly timeout?: number | TimeoutOptions<ResolveValueType>;
 
 	/**
 	Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
@@ -94,7 +73,7 @@ declare const pWaitFor: {
 	console.log('Yay! The file now exists.');
 	```
 	*/
-	<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
+	<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options<ResolveValueType>): Promise<ResolveValueType>;
 
 	/**
 	Resolve the main promise with a custom value.
