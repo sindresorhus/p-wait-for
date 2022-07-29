@@ -31,7 +31,7 @@ test('waits no longer than `timeout` milliseconds before rejecting', async t => 
 		return true;
 	}, {
 		interval: 20,
-		timeout: maxWait
+		timeout: maxWait,
 	}));
 
 	const timeTaken = end();
@@ -49,8 +49,8 @@ test('stops performing checks if a timeout occurs', async t => {
 		},
 		{
 			interval: 10,
-			timeout: 200
-		}
+			timeout: 200,
+		},
 	)
 		.catch(async _ => {
 			const checksAtTimeout = checksPerformed;
@@ -65,7 +65,7 @@ test('does not perform a leading check', async t => {
 
 	await pWaitFor(async () => true, {
 		interval: ms,
-		before: false
+		before: false,
 	});
 
 	t.true(end() > (ms - 20));
@@ -90,11 +90,11 @@ test('timeout option - object', async t => {
 	}, {
 		timeout: {
 			milliseconds: 100,
-			message: new CustomizedTimeoutError()
-		}
+			message: new CustomizedTimeoutError(),
+		},
 	}), {
 		name: 'MyError',
 		message: 'Time’s up!',
-		instanceOf: CustomizedTimeoutError
+		instanceOf: CustomizedTimeoutError,
 	});
 });

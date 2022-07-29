@@ -6,7 +6,7 @@ export default async function pWaitFor(condition, options = {}) {
 	const {
 		interval = 20,
 		timeout = Number.POSITIVE_INFINITY,
-		before = true
+		before = true,
 	} = options;
 
 	let retryTimeout;
