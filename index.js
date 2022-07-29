@@ -37,19 +37,15 @@ export default async function pWaitFor(condition, options = {}) {
 		}
 	});
 
-	if (timeout !== Number.POSITIVE_INFINITY) {
-		try {
-			return await pTimeout(promise, timeout);
-		} catch (error) {
-			if (retryTimeout) {
-				clearTimeout(retryTimeout);
-			}
-
-			throw error;
-		}
+	if (timeout === Number.POSITIVE_INFINITY) {
+		return promise;
 	}
 
-	return promise;
+	try {
+		return await pTimeout(promise, typeof timeout === 'number' ? {milliseconds: timeout} : timeout);
+	} finally {
+		clearTimeout(retryTimeout);
+	}
 }
 
 pWaitFor.resolveWith = value => ({[resolveValue]: value});

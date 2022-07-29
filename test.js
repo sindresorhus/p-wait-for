@@ -74,3 +74,27 @@ test('does not perform a leading check', async t => {
 test('resolveWith()', async t => {
 	t.true(await pWaitFor(() => pWaitFor.resolveWith(true)));
 });
+
+test('timeout option - object', async t => {
+	class CustomizedTimeoutError extends Error {
+		constructor() {
+			super();
+			this.name = 'MyError';
+			this.message = 'Time’s up!';
+		}
+	}
+
+	await t.throwsAsync(pWaitFor(async () => {
+		await delay(1000);
+		return true;
+	}, {
+		timeout: {
+			milliseconds: 100,
+			message: new CustomizedTimeoutError()
+		}
+	}), {
+		name: 'MyError',
+		message: 'Time’s up!',
+		instanceOf: CustomizedTimeoutError
+	});
+});

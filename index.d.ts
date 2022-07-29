@@ -1,4 +1,6 @@
-export interface Options {
+import {Options as TimeoutOptions} from 'p-timeout';
+
+export interface Options<ResolveValueType> {
 	/**
 	Number of milliseconds to wait after `condition` resolves to `false` before calling it again.
 
@@ -9,9 +11,35 @@ export interface Options {
 	/**
 	Number of milliseconds to wait before automatically rejecting with a `TimeoutError`.
 
+	You can customize the timeout `Error` by specifying `TimeoutOptions`.
+
 	@default Infinity
+
+	@example
+	```
+	import pWaitFor from 'p-wait-for';
+	import {pathExists} from 'path-exists';
+
+	const originalSetTimeout = setTimeout;
+	const originalClearTimeout = clearTimeout;
+
+	sinon.useFakeTimers();
+
+	await pWaitFor(() => pathExists('unicorn.png'), {
+		timeout: {
+			milliseconds: 100,
+			message: new MyError('Time’s up!'),
+			customTimers: {
+				setTimeout: originalSetTimeout,
+				clearTimeout: originalClearTimeout
+			}
+		}
+	});
+
+	console.log('Yay! The file now exists.');
+	```
 	*/
-	readonly timeout?: number;
+	readonly timeout?: number | TimeoutOptions<ResolveValueType>;
 
 	/**
 	Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
@@ -45,7 +73,7 @@ declare const pWaitFor: {
 	console.log('Yay! The file now exists.');
 	```
 	*/
-	<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options): Promise<ResolveValueType>;
+	<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options<ResolveValueType>): Promise<ResolveValueType>;
 
 	/**
 	Resolve the main promise with a custom value.
