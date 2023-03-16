@@ -8,3 +8,4 @@ expectType<Promise<void>>(pWaitFor(() => true, {timeout: 1}));
 expectType<Promise<void>>(pWaitFor(() => true, {before: false}));
 expectType<Promise<number>>(pWaitFor(() => pWaitFor.resolveWith(1)));
 expectType<Promise<number>>(pWaitFor(() => pWaitFor.resolveWith(1)));
+expectType<Promise<number>>(pWaitFor(async () => true as boolean && pWaitFor.resolveWith(1)));
