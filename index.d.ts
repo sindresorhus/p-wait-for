@@ -73,7 +73,7 @@ declare const pWaitFor: {
 	console.log('Yay! The file now exists.');
 	```
 	*/
-	<ResolveValueType>(condition: () => PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options<ResolveValueType>): Promise<ResolveValueType>;
+	<ResolveValueType>(condition: () => PromiseLike<boolean | ResolveValue<ResolveValueType>> | PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options<ResolveValueType>): Promise<ResolveValueType>;
 
 	/**
 	Resolve the main promise with a custom value.
