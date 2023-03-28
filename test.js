@@ -62,25 +62,25 @@ test('stops performing checks if a timeout occurs', async t => {
 test('stops performing async checks if a timeout occurs', async t => {
 	let checksPerformed = 0;
 
-	await pWaitFor(
-		async () => {
-			await new Promise(resolve => {
-				setTimeout(resolve, 20);
+	try {
+		await pWaitFor(
+			async () => {
+				await new Promise(resolve => {
+					setTimeout(resolve, 20);
+				});
+				checksPerformed += 1;
+				return false;
+			},
+			{
+				interval: 10,
+				timeout: 200,
 			});
-			checksPerformed += 1;
-			return false;
-		},
-		{
-			interval: 10,
-			timeout: 200,
-		},
-	)
-		.catch(async _ => {
-			const checksAtTimeout = checksPerformed;
-			await delay(100);
-			// One more check might have been run if it was already started
-			t.true([checksAtTimeout, checksAtTimeout + 1].includes(checksPerformed));
-		});
+	} catch {
+		const checksAtTimeout = checksPerformed;
+		await delay(100);
+		// One more check might have been run if it was already started
+		t.true([checksAtTimeout, checksAtTimeout + 1].includes(checksPerformed));
+	}
 });
 
 test('does not perform a leading check', async t => {
