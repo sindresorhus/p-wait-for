@@ -10,6 +10,7 @@ export default async function pWaitFor(condition, options = {}) {
 	} = options;
 
 	let retryTimeout;
+	let abort = false;
 
 	const promise = new Promise((resolve, reject) => {
 		const check = async () => {
@@ -22,7 +23,7 @@ export default async function pWaitFor(condition, options = {}) {
 					throw new TypeError('Expected condition to return a boolean');
 				} else if (value === true) {
 					resolve();
-				} else {
+				} else if (!abort) {
 					retryTimeout = setTimeout(check, interval);
 				}
 			} catch (error) {
@@ -44,6 +45,7 @@ export default async function pWaitFor(condition, options = {}) {
 	try {
 		return await pTimeout(promise, typeof timeout === 'number' ? {milliseconds: timeout} : timeout);
 	} finally {
+		abort = true;
 		clearTimeout(retryTimeout);
 	}
 }
