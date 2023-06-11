@@ -122,3 +122,42 @@ test('timeout option - object', async t => {
 		instanceOf: CustomizedTimeoutError,
 	});
 });
+
+/**
+TODO: Remove if statement when targeting Node.js 16.
+*/
+if (globalThis.AbortController !== undefined) {
+	test('rejects when calling `AbortController#abort()`', async t => {
+		const abortController = new AbortController();
+
+		const promise = pWaitFor(async () => {
+			await delay(3000);
+			return true;
+		}, {
+			timeout: 2000,
+			signal: abortController.signal,
+		});
+
+		abortController.abort();
+
+		await t.throwsAsync(promise, {
+			name: 'AbortError',
+		});
+	});
+
+	test('already aborted signal', async t => {
+		const abortController = new AbortController();
+
+		abortController.abort();
+
+		await t.throwsAsync(pWaitFor(async () => {
+			await delay(3000);
+			return true;
+		}, {
+			timeout: 2000,
+			signal: abortController.signal,
+		}), {
+			name: 'AbortError',
+		});
+	});
+}
