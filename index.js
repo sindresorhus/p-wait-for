@@ -7,6 +7,7 @@ export default async function pWaitFor(condition, options = {}) {
 		interval = 20,
 		timeout = Number.POSITIVE_INFINITY,
 		before = true,
+		signal,
 	} = options;
 
 	let retryTimeout;
@@ -43,7 +44,7 @@ export default async function pWaitFor(condition, options = {}) {
 	}
 
 	try {
-		return await pTimeout(promise, typeof timeout === 'number' ? {milliseconds: timeout} : timeout);
+		return await pTimeout(promise, typeof timeout === 'number' ? {milliseconds: timeout, signal} : timeout);
 	} finally {
 		abort = true;
 		clearTimeout(retryTimeout);

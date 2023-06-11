@@ -49,6 +49,32 @@ export type Options<ResolveValueType> = {
 	@default true
 	*/
 	readonly before?: boolean;
+
+	/**
+	You can abort retrying using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+
+	_Requires Node.js 16 or later._
+
+	@example
+	```
+	import pWaitFor from 'p-wait-for';
+	import delay from 'delay';
+
+	const delayedPromise = delay(3000);
+
+	const abortController = new AbortController();
+
+	setTimeout(() => {
+		abortController.abort();
+	}, 100);
+
+	await pWaitFor(delayedPromise, {
+		timeout: 2000,
+		signal: abortController.signal
+	});
+	```
+	*/
+	readonly signal?: globalThis.AbortSignal;
 };
 
 // https://github.com/sindresorhus/type-fest/blob/043b732bf02c2b700245aa6501116a6646d50732/source/opaque.d.ts

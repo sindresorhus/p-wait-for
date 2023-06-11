@@ -75,6 +75,33 @@ await pWaitFor(() => pathExists('unicorn.png'), {
 console.log('Yay! The file now exists.');
 ```
 
+##### signal
+
+Type: `AbortSignal?`\
+Default: `Infinity`
+
+You can abort retrying using [`AbortController`](https://developer.mozilla.org/en-US/docs/Web/API/AbortController).
+
+_Requires Node.js 16 or later._
+
+```js
+import pWaitFor from 'p-wait-for';
+import delay from 'delay';
+
+const delayedPromise = delay(3000);
+
+const abortController = new AbortController();
+
+setTimeout(() => {
+	abortController.abort();
+}, 100);
+
+await pWaitFor(delayedPromise, {
+	timeout: 2000,
+	signal: abortController.signal
+});
+```
+
 ###### milliseconds
 
 Type: `number`\
