@@ -1,6 +1,6 @@
-import {Options as TimeoutOptions} from 'p-timeout';
+import type {Options as TimeoutOptions} from 'p-timeout';
 
-export interface Options<ResolveValueType> {
+export type Options<ResolveValueType> = {
 	/**
 	Number of milliseconds to wait after `condition` resolves to `false` before calling it again.
 
@@ -49,14 +49,14 @@ export interface Options<ResolveValueType> {
 	@default true
 	*/
 	readonly before?: boolean;
-}
+};
 
 // https://github.com/sindresorhus/type-fest/blob/043b732bf02c2b700245aa6501116a6646d50732/source/opaque.d.ts
 declare const resolveValueSymbol: unique symbol;
 
-interface ResolveValue<ResolveValueType> {
+type ResolveValue<ResolveValueType> = {
 	[resolveValueSymbol]: ResolveValueType;
-}
+};
 
 declare const pWaitFor: {
 	/**
