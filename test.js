@@ -51,12 +51,11 @@ test('stops performing checks if a timeout occurs', async t => {
 			interval: 10,
 			timeout: 200,
 		},
-	)
-		.catch(async _ => {
-			const checksAtTimeout = checksPerformed;
-			await delay(100);
-			t.is(checksPerformed, checksAtTimeout);
-		});
+	).catch(async _ => { // eslint-disable-line promise/prefer-await-to-then
+		const checksAtTimeout = checksPerformed;
+		await delay(100);
+		t.is(checksPerformed, checksAtTimeout);
+	});
 });
 
 test('stops performing async checks if a timeout occurs', async t => {
@@ -74,7 +73,8 @@ test('stops performing async checks if a timeout occurs', async t => {
 			{
 				interval: 10,
 				timeout: 200,
-			});
+			},
+		);
 	} catch {
 		const checksAtTimeout = checksPerformed;
 		await delay(100);

@@ -39,7 +39,7 @@ export type Options<ResolveValueType> = {
 	console.log('Yay! The file now exists.');
 	```
 	*/
-	readonly timeout?: number | TimeoutOptions<ResolveValueType>; // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
+	readonly timeout?: number | TimeoutOptions<ResolveValueType>;
 
 	/**
 	Whether to run the check immediately rather than starting by waiting `interval` milliseconds.
