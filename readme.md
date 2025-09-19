@@ -30,7 +30,7 @@ Returns a `Promise` that resolves when `condition` returns `true`. Rejects if `c
 
 Type: `Function`
 
-Expected to return `Promise<boolean> | boolean`.
+Expected to return `Promise<boolean> | boolean` or a value from `pWaitFor.resolveWith()`.
 
 #### options
 
@@ -56,19 +56,10 @@ You can customize the timeout `Error` by specifying `TimeoutOptions`.
 import pWaitFor from 'p-wait-for';
 import {pathExists} from 'path-exists';
 
-const originalSetTimeout = setTimeout;
-const originalClearTimeout = clearTimeout;
-
-sinon.useFakeTimers();
-
 await pWaitFor(() => pathExists('unicorn.png'), {
 	timeout: {
 		milliseconds: 100,
-		message: new MyError('Time’s up!'),
-		customTimers: {
-			setTimeout: originalSetTimeout,
-			clearTimeout: originalClearTimeout
-		}
+		message: new Error('Time’s up!')
 	}
 });
 
@@ -77,8 +68,7 @@ console.log('Yay! The file now exists.');
 
 ###### milliseconds
 
-Type: `number`\
-Default: `Infinity`
+Type: `number`
 
 Milliseconds before timing out.
 
@@ -87,19 +77,10 @@ Passing `Infinity` will cause it to never time out.
 ###### message
 
 Type: `string | Error`
-Default: `'Promise timed out after 50 milliseconds'`
 
-Specify a custom error message or error.
+Specify a custom error message or error. If not specified, the default error message will be 'Promise timed out after {milliseconds} milliseconds' where {milliseconds} is replaced with the actual timeout value.
 
 If you do a custom error, it's recommended to sub-class `TimeoutError`.
-
-###### customTimers
-
-Type: `object` with function properties `setTimeout` and `clearTimeout`
-
-Custom implementations for the `setTimeout` and `clearTimeout` functions.
-
-Useful for testing purposes, in particular to work around [`sinon.useFakeTimers()`](https://sinonjs.org/releases/latest/fake-timers/).
 
 ###### fallback
 
@@ -107,20 +88,25 @@ Type: `Function`
 
 Do something other than rejecting with an error on timeout.
 
+You could for example retry with more attempts.
+
 Example:
 
 ```js
 import pWaitFor from 'p-wait-for';
 import {pathExists} from 'path-exists';
 
-await pWaitFor(() => pathExists('unicorn.png'), {
+const result = await pWaitFor(() => pathExists('unicorn.png'), {
 	timeout: {
 		milliseconds: 50,
 		fallback: () => {
-			console.log('Time’s up! executed the fallback function!');
+			console.log('Time’s up! Executed the fallback function.');
+			return 'default-value';
 		},
 	}
 });
+
+console.log(result); // 'default-value'
 ```
 
 ##### before
@@ -132,13 +118,19 @@ Whether to run the check immediately rather than starting by waiting `interval` 
 
 Useful for when the check, if run immediately, would likely return `false`. In this scenario, set `before` to `false`.
 
-#### resolveWith(value)
+##### signal
+
+Type: `AbortSignal`
+
+An `AbortSignal` to cancel the wait operation.
+
+### pWaitFor.resolveWith(value)
 
 Resolve the main promise with a custom value.
 
 ```js
 import pWaitFor from 'p-wait-for';
-import pathExists from 'path-exists';
+import {pathExists} from 'path-exists';
 
 const path = await pWaitFor(async () => {
 	const path = getPath();

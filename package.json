@@ -40,9 +40,7 @@
 		"promises",
 		"bluebird"
 	],
-	"dependencies": {
-		"p-timeout": "^7.0.0"
-	},
+	"dependencies": {},
 	"devDependencies": {
 		"ava": "^6.4.1",
 		"delay": "^6.0.0",

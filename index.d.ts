@@ -1,4 +1,23 @@
-import type {Options as TimeoutOptions} from 'p-timeout';
+export type TimeoutOptions<ResolveValueType> = {
+	/**
+	Milliseconds before timing out.
+	*/
+	readonly milliseconds: number;
+
+	/**
+	Specify a custom error message or error.
+
+	If not specified, the default error message will be 'Promise timed out after {milliseconds} milliseconds' where {milliseconds} is replaced with the actual timeout value.
+	*/
+	readonly message?: string | Error;
+
+	/**
+	Do something other than rejecting with an error on timeout.
+
+	You could for example retry with more attempts.
+	*/
+	readonly fallback?: () => ResolveValueType;
+};
 
 export type Options<ResolveValueType> = {
 	/**
@@ -20,19 +39,10 @@ export type Options<ResolveValueType> = {
 	import pWaitFor from 'p-wait-for';
 	import {pathExists} from 'path-exists';
 
-	const originalSetTimeout = setTimeout;
-	const originalClearTimeout = clearTimeout;
-
-	sinon.useFakeTimers();
-
 	await pWaitFor(() => pathExists('unicorn.png'), {
 		timeout: {
 			milliseconds: 100,
-			message: new MyError('Time’s up!'),
-			customTimers: {
-				setTimeout: originalSetTimeout,
-				clearTimeout: originalClearTimeout
-			}
+			message: new Error('Time's up!')
 		}
 	});
 
@@ -49,6 +59,11 @@ export type Options<ResolveValueType> = {
 	@default true
 	*/
 	readonly before?: boolean;
+
+	/**
+	An `AbortSignal` to cancel the wait operation.
+	*/
+	readonly signal?: AbortSignal;
 };
 
 // https://github.com/sindresorhus/type-fest/blob/043b732bf02c2b700245aa6501116a6646d50732/source/opaque.d.ts
@@ -73,7 +88,10 @@ declare const pWaitFor: {
 	console.log('Yay! The file now exists.');
 	```
 	*/
-	<ResolveValueType>(condition: () => PromiseLike<boolean | ResolveValue<ResolveValueType>> | PromiseLike<boolean> | boolean | ResolveValue<ResolveValueType> | PromiseLike<ResolveValue<ResolveValueType>>, options?: Options<ResolveValueType>): Promise<ResolveValueType>;
+	<ResolveValueType>(
+		condition: () => PromiseLike<boolean | ResolveValue<ResolveValueType>> | boolean | ResolveValue<ResolveValueType>,
+		options?: Options<ResolveValueType>
+	): Promise<ResolveValueType>;
 
 	/**
 	Resolve the main promise with a custom value.
@@ -81,7 +99,7 @@ declare const pWaitFor: {
 	@example
 	```
 	import pWaitFor from 'p-wait-for';
-	import pathExists from 'path-exists';
+	import {pathExists} from 'path-exists';
 
 	const path = await pWaitFor(async () => {
 		const path = getPath();
@@ -96,4 +114,7 @@ declare const pWaitFor: {
 
 export default pWaitFor;
 
-export {TimeoutError} from 'p-timeout';
+export class TimeoutError extends Error {
+	constructor(message?: string);
+	readonly name: 'TimeoutError';
+}
