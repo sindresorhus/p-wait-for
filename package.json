@@ -1,6 +1,6 @@
 {
 	"name": "p-wait-for",
-	"version": "5.0.2",
+	"version": "6.0.0",
 	"description": "Wait for a condition to be true",
 	"license": "MIT",
 	"repository": "sindresorhus/p-wait-for",
