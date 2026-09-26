@@ -7,13 +7,19 @@ const sleep = (ms, signal) => new Promise((resolve, reject) => {
 		return;
 	}
 
-	const timeout = setTimeout(resolve, ms);
+	const onAbort = () => {
+		clearTimeout(timeout);
+		reject(signal.reason);
+	};
+
+	const timeout = setTimeout(() => {
+		// `once: true` only detaches the listener when the signal aborts, so a normal resolve has to remove it.
+		signal?.removeEventListener('abort', onAbort);
+		resolve();
+	}, ms);
 
 	if (signal) {
-		signal.addEventListener('abort', () => {
-			clearTimeout(timeout);
-			reject(signal.reason);
-		}, {once: true});
+		signal.addEventListener('abort', onAbort, {once: true});
 	}
 });
 

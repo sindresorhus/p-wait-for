@@ -1,7 +1,10 @@
+import {getEventListeners} from 'node:events';
 import test from 'ava';
 import delay from 'delay';
 import timeSpan from 'time-span';
 import pWaitFor from './index.js';
+
+const abortListenerCount = signal => getEventListeners(signal, 'abort').length;
 
 test('waits for condition', async t => {
 	const ms = 200;
@@ -629,4 +632,22 @@ test('timeout message as string', async t => {
 		}),
 		{message: 'Custom timeout message'},
 	);
+});
+
+test('removes the abort listener once each poll settles', async t => {
+	// `once: true` only detaches on abort, so every completed poll left a listener holding its timer.
+	const controller = new AbortController();
+	const {signal} = controller;
+
+	let polls = 0;
+	await pWaitFor(() => ++polls >= 200, {interval: 0, signal});
+	t.is(abortListenerCount(signal), 0);
+
+	await pWaitFor(() => true, {interval: 0, signal});
+	t.is(abortListenerCount(signal), 0);
+
+	// An abort still rejects a pending wait.
+	const pending = pWaitFor(() => false, {interval: 5, signal});
+	controller.abort(new Error('stop'));
+	await t.throwsAsync(pending, {message: 'stop'});
 });
