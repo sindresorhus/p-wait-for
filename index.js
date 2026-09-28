@@ -87,7 +87,16 @@ export default async function pWaitFor(condition, options = {}) {
 
 	// Handle initial delay
 	if (!before) {
-		await sleep(interval, combinedSignal);
+		try {
+			await sleep(interval, combinedSignal);
+		} catch (error) {
+			// The timeout or the user abort can expire here, before `condition` ever runs.
+			if (error === combinedSignal?.reason) {
+				return handleAbortError(timeoutSignal, timeout, signal);
+			}
+
+			throw error;
+		}
 	}
 
 	// Check for pre-abort

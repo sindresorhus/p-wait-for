@@ -93,6 +93,40 @@ test('timeout with fallback function', async t => {
 	t.is(result, 'fallback value');
 });
 
+test('timeout with fallback function when `before` is false', async t => {
+	let fallbackCalled = false;
+
+	// The timeout expires during the initial `interval` delay, before `condition` ever runs.
+	const result = await pWaitFor(() => false, {
+		before: false,
+		interval: 200,
+		timeout: {
+			milliseconds: 50,
+			fallback() {
+				fallbackCalled = true;
+				return 'fallback value';
+			},
+		},
+	});
+
+	t.true(fallbackCalled);
+	t.is(result, 'fallback value');
+});
+
+test('timeout with custom error message when `before` is false', async t => {
+	await t.throwsAsync(
+		pWaitFor(() => false, {
+			before: false,
+			interval: 200,
+			timeout: {
+				milliseconds: 50,
+				message: 'Custom timeout message',
+			},
+		}),
+		{message: 'Custom timeout message'},
+	);
+});
+
 test('stops checking after timeout', async t => {
 	let checks = 0;
 
