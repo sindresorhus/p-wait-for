@@ -1,12 +1,13 @@
+/* eslint-disable node-test/no-conditional-assertion -- The interval test is table-driven: every recorded gap is asserted inside the loop. */
 import {getEventListeners} from 'node:events';
-import test from 'ava';
-import delay from 'delay';
+import {setTimeout as delay} from 'node:timers/promises';
+import test from 'node:test';
 import timeSpan from 'time-span';
 import pWaitFor from './index.js';
 
 const abortListenerCount = signal => getEventListeners(signal, 'abort').length;
 
-test('waits for condition', async t => {
+test('waits for condition', {timeout: 30_000}, async t => {
 	const ms = 200;
 	const end = timeSpan();
 
@@ -15,38 +16,50 @@ test('waits for condition', async t => {
 		return true;
 	});
 
-	t.true(end() > (ms - 20));
+	t.assert.ok(end() > (ms - 20));
 });
 
-test('rejects if condition throws', async t => {
+test('rejects if condition throws', {timeout: 30_000}, async t => {
 	const error = new Error('foo');
-	await t.throwsAsync(pWaitFor(() => {
+	await t.assert.rejects(pWaitFor(() => {
 		throw error;
-	}), {is: error});
+	}), thrown => thrown === error);
 });
 
-test('rejects if condition returns non-boolean', async t => {
-	await t.throwsAsync(
+test('rejects if condition returns non-boolean', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => 'not a boolean'),
-		{instanceOf: TypeError, message: 'Expected condition to return a boolean'},
+		{name: 'TypeError', message: 'Expected condition to return a boolean'},
 	);
 });
 
-test('timeout rejects with TimeoutError', async t => {
+test('timeout rejects with TimeoutError', {timeout: 30_000}, async t => {
 	const end = timeSpan();
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {timeout: 100}),
 		{name: 'TimeoutError'},
 	);
 
 	const timeTaken = end();
-	t.true(timeTaken >= 95); // Allow 5ms tolerance for CI timing variations
-	t.true(timeTaken < 200); // Increase upper bound for slow CI environments
+	t.assert.ok(timeTaken >= 95); // Allow 5ms tolerance for CI timing variations
+	t.assert.ok(timeTaken < 200); // Increase upper bound for slow CI environments
 });
 
-test('timeout with custom error message', async t => {
-	await t.throwsAsync(
+test('timeout has a default message', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
+		pWaitFor(() => false, {timeout: 100}),
+		{name: 'TimeoutError', message: 'Promise timed out'},
+	);
+
+	await t.assert.rejects(
+		pWaitFor(() => false, {timeout: {milliseconds: 100}}),
+		{name: 'TimeoutError', message: 'Promise timed out after 100 milliseconds'},
+	);
+});
+
+test('timeout with custom error message', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: {
 				milliseconds: 100,
@@ -57,7 +70,7 @@ test('timeout with custom error message', async t => {
 	);
 });
 
-test('timeout with custom error object', async t => {
+test('timeout with custom error object', {timeout: 30_000}, async t => {
 	class CustomError extends Error {
 		constructor() {
 			super('Custom error');
@@ -65,36 +78,36 @@ test('timeout with custom error object', async t => {
 		}
 	}
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: {
 				milliseconds: 100,
 				message: new CustomError(),
 			},
 		}),
-		{instanceOf: CustomError},
+		{name: 'CustomError'},
 	);
 });
 
-test('timeout with fallback function', async t => {
-	let fallbackCalled = false;
+test('timeout with fallback function', {timeout: 30_000}, async t => {
+	let wasFallbackCalled = false;
 
 	const result = await pWaitFor(() => false, {
 		timeout: {
 			milliseconds: 100,
 			fallback() {
-				fallbackCalled = true;
+				wasFallbackCalled = true;
 				return 'fallback value';
 			},
 		},
 	});
 
-	t.true(fallbackCalled);
-	t.is(result, 'fallback value');
+	t.assert.ok(wasFallbackCalled);
+	t.assert.strictEqual(result, 'fallback value');
 });
 
-test('timeout with fallback function when `before` is false', async t => {
-	let fallbackCalled = false;
+test('timeout with fallback function when `before` is false', {timeout: 30_000}, async t => {
+	let wasFallbackCalled = false;
 
 	// The timeout expires during the initial `interval` delay, before `condition` ever runs.
 	const result = await pWaitFor(() => false, {
@@ -103,18 +116,18 @@ test('timeout with fallback function when `before` is false', async t => {
 		timeout: {
 			milliseconds: 50,
 			fallback() {
-				fallbackCalled = true;
+				wasFallbackCalled = true;
 				return 'fallback value';
 			},
 		},
 	});
 
-	t.true(fallbackCalled);
-	t.is(result, 'fallback value');
+	t.assert.ok(wasFallbackCalled);
+	t.assert.strictEqual(result, 'fallback value');
 });
 
-test('timeout with custom error message when `before` is false', async t => {
-	await t.throwsAsync(
+test('timeout with custom error message when `before` is false', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			before: false,
 			interval: 200,
@@ -127,23 +140,23 @@ test('timeout with custom error message when `before` is false', async t => {
 	);
 });
 
-test('stops checking after timeout', async t => {
+test('stops checking after timeout', {timeout: 30_000}, async t => {
 	let checks = 0;
 
-	await t.throwsAsync(pWaitFor(() => {
+	await t.assert.rejects(pWaitFor(() => {
 		checks++;
 		return false;
 	}, {
 		interval: 10,
 		timeout: 100,
-	}));
+	}), {name: 'TimeoutError'});
 
 	const checksAtTimeout = checks;
 	await delay(50);
-	t.is(checks, checksAtTimeout);
+	t.assert.strictEqual(checks, checksAtTimeout);
 });
 
-test('before option delays first check', async t => {
+test('before option delays first check', {timeout: 30_000}, async t => {
 	const end = timeSpan();
 
 	await pWaitFor(() => true, {
@@ -151,16 +164,16 @@ test('before option delays first check', async t => {
 		before: false,
 	});
 
-	t.true(end() >= 95); // Allow 5ms margin
+	t.assert.ok(end() >= 95); // Allow 5ms margin
 });
 
-test('resolveWith returns custom value', async t => {
-	t.is(await pWaitFor(() => pWaitFor.resolveWith('custom')), 'custom');
-	t.is(await pWaitFor(() => pWaitFor.resolveWith(42)), 42);
-	t.is(await pWaitFor(() => pWaitFor.resolveWith(undefined)), undefined);
+test('resolveWith returns custom value', {timeout: 30_000}, async t => {
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith('custom')), 'custom');
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith(42)), 42);
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith(undefined)), undefined);
 });
 
-test('aborts when signal is aborted', async t => {
+test('aborts when signal is aborted', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 	const end = timeSpan();
 
@@ -168,7 +181,7 @@ test('aborts when signal is aborted', async t => {
 		controller.abort(new Error('Aborted'));
 	}, 100);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			interval: 10,
 			signal: controller.signal,
@@ -177,21 +190,21 @@ test('aborts when signal is aborted', async t => {
 	);
 
 	const timeTaken = end();
-	t.true(timeTaken >= 95); // Allow 5ms tolerance for timer precision
-	t.true(timeTaken < 150);
+	t.assert.ok(timeTaken >= 95); // Allow 5ms tolerance for timer precision
+	t.assert.ok(timeTaken < 150);
 });
 
-test('handles pre-aborted signal', async t => {
+test('handles pre-aborted signal', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 	controller.abort(new Error('Already aborted'));
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => true, {signal: controller.signal}),
 		{message: 'Already aborted'},
 	);
 });
 
-test('stops checking after abort', async t => {
+test('stops checking after abort', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 	let checks = 0;
 
@@ -199,20 +212,20 @@ test('stops checking after abort', async t => {
 		controller.abort(new Error('Aborted'));
 	}, 100);
 
-	await t.throwsAsync(pWaitFor(() => {
+	await t.assert.rejects(pWaitFor(() => {
 		checks++;
 		return false;
 	}, {
 		interval: 10,
 		signal: controller.signal,
-	}));
+	}), {message: 'Aborted'});
 
 	const checksAtAbort = checks;
 	await delay(50);
-	t.is(checks, checksAtAbort);
+	t.assert.strictEqual(checks, checksAtAbort);
 });
 
-test('signal and timeout work together', async t => {
+test('signal and timeout work together', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 
 	// Abort before timeout
@@ -220,7 +233,7 @@ test('signal and timeout work together', async t => {
 		controller.abort(new Error('Aborted'));
 	}, 50);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: 200,
 			signal: controller.signal,
@@ -229,7 +242,7 @@ test('signal and timeout work together', async t => {
 	);
 });
 
-test('timeout before abort signal', async t => {
+test('timeout before abort signal', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 
 	// Abort after timeout
@@ -237,7 +250,7 @@ test('timeout before abort signal', async t => {
 		controller.abort(new Error('Aborted'));
 	}, 200);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: 50,
 			signal: controller.signal,
@@ -246,7 +259,7 @@ test('timeout before abort signal', async t => {
 	);
 });
 
-test('resolves with signal when condition becomes true', async t => {
+test('resolves with signal when condition becomes true', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 	let checks = 0;
 
@@ -258,28 +271,28 @@ test('resolves with signal when condition becomes true', async t => {
 		signal: controller.signal,
 	});
 
-	t.true(checks >= 3);
+	t.assert.ok(checks >= 3);
 });
 
-test('resolveWith works with timeout', async t => {
+test('resolveWith works with timeout', {timeout: 30_000}, async t => {
 	const result = await pWaitFor(() => pWaitFor.resolveWith('value'), {
 		timeout: 1000,
 	});
 
-	t.is(result, 'value');
+	t.assert.strictEqual(result, 'value');
 });
 
-test('resolveWith works with signal', async t => {
+test('resolveWith works with signal', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 
 	const result = await pWaitFor(() => pWaitFor.resolveWith('value'), {
 		signal: controller.signal,
 	});
 
-	t.is(result, 'value');
+	t.assert.strictEqual(result, 'value');
 });
 
-test('interval is respected', async t => {
+test('interval is respected', {timeout: 30_000}, async t => {
 	let checks = 0;
 	const checkTimes = [];
 
@@ -291,16 +304,16 @@ test('interval is respected', async t => {
 		interval: 50,
 	});
 
-	t.true(checks >= 3);
+	t.assert.ok(checks >= 3);
 
 	// Check intervals between calls (allowing some margin)
 	for (let i = 1; i < checkTimes.length; i++) {
 		const interval = checkTimes[i] - checkTimes[i - 1];
-		t.true(interval >= 45); // Allow 5ms margin
+		t.assert.ok(interval >= 45); // Allow 5ms margin
 	}
 });
 
-test('handles async condition that resolves false multiple times', async t => {
+test('handles async condition that resolves false multiple times', {timeout: 30_000}, async t => {
 	let checks = 0;
 
 	await pWaitFor(async () => {
@@ -311,105 +324,104 @@ test('handles async condition that resolves false multiple times', async t => {
 		interval: 10,
 	});
 
-	t.is(checks, 5);
+	t.assert.strictEqual(checks, 5);
 });
 
-test('cleanup happens on successful resolution', async t => {
-	// This test ensures cleanup happens by not hanging
+test('cleanup happens on successful resolution', {timeout: 30_000}, async t => {
+	// `once: true` only detaches on abort, so a poll that completes has to remove its own listener.
 	const controller = new AbortController();
+	let polls = 0;
 
-	await pWaitFor(() => true, {
+	await pWaitFor(() => ++polls >= 2, {
+		interval: 0,
 		signal: controller.signal,
 	});
 
-	// If cleanup didn't happen, this might cause issues
-	controller.abort();
-	t.pass();
+	t.assert.strictEqual(abortListenerCount(controller.signal), 0);
 });
 
-test('cleanup happens on error', async t => {
+test('cleanup happens on error', {timeout: 30_000}, async t => {
 	// This test ensures cleanup happens by not hanging
 	const controller = new AbortController();
 
-	await t.throwsAsync(pWaitFor(() => {
+	await t.assert.rejects(pWaitFor(() => {
 		throw new Error('test');
 	}, {
 		signal: controller.signal,
-	}));
+	}), {message: 'test'});
 
 	// If cleanup didn't happen, this might cause issues
 	controller.abort();
-	t.pass();
 });
 
-test('throws on invalid timeout.milliseconds', async t => {
-	await t.throwsAsync(
+test('throws on invalid timeout.milliseconds', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => true, {
 			timeout: {
 				message: 'custom message',
 			},
 		}),
-		{instanceOf: TypeError, message: 'Expected timeout.milliseconds to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a finite non-negative number'},
 	);
 });
 
-test('throws on negative interval', async t => {
-	await t.throwsAsync(
+test('throws on negative interval', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => true, {interval: -1}),
-		{instanceOf: TypeError, message: 'Expected interval to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected interval to be a finite non-negative number'},
 	);
 });
 
-test('throws on NaN interval', async t => {
-	await t.throwsAsync(
-		pWaitFor(() => true, {interval: Number.NaN}),
-		{instanceOf: TypeError, message: 'Expected interval to be a finite non-negative number'},
+test('throws on NaN interval', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
+		pWaitFor(() => true, {interval: NaN}),
+		{name: 'TypeError', message: 'Expected interval to be a finite non-negative number'},
 	);
 });
 
-test('throws on Infinity interval', async t => {
-	await t.throwsAsync(
-		pWaitFor(() => true, {interval: Number.POSITIVE_INFINITY}),
-		{instanceOf: TypeError, message: 'Expected interval to be a finite non-negative number'},
+test('throws on Infinity interval', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
+		pWaitFor(() => true, {interval: Infinity}),
+		{name: 'TypeError', message: 'Expected interval to be a finite non-negative number'},
 	);
 });
 
-test('throws on negative timeout', async t => {
-	await t.throwsAsync(
+test('throws on negative timeout', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => true, {timeout: -100}),
-		{instanceOf: TypeError, message: 'Expected timeout to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout to be a finite non-negative number'},
 	);
 });
 
-test('throws on NaN timeout', async t => {
-	await t.throwsAsync(
-		pWaitFor(() => true, {timeout: Number.NaN}),
-		{instanceOf: TypeError, message: 'Expected timeout to be a finite non-negative number'},
+test('throws on NaN timeout', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
+		pWaitFor(() => true, {timeout: NaN}),
+		{name: 'TypeError', message: 'Expected timeout to be a finite non-negative number'},
 	);
 });
 
-test('throws on negative timeout.milliseconds', async t => {
-	await t.throwsAsync(
+test('throws on negative timeout.milliseconds', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => true, {
 			timeout: {milliseconds: -100},
 		}),
-		{instanceOf: TypeError, message: 'Expected timeout.milliseconds to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a finite non-negative number'},
 	);
 });
 
-test('throws on NaN timeout.milliseconds', async t => {
-	await t.throwsAsync(
+test('throws on NaN timeout.milliseconds', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => true, {
-			timeout: {milliseconds: Number.NaN},
+			timeout: {milliseconds: NaN},
 		}),
-		{instanceOf: TypeError, message: 'Expected timeout.milliseconds to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a finite non-negative number'},
 	);
 });
 
-test('handles fallback errors gracefully', async t => {
+test('handles fallback errors gracefully', {timeout: 30_000}, async t => {
 	const fallbackError = new Error('Fallback failed');
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: {
 				milliseconds: 50,
@@ -418,36 +430,36 @@ test('handles fallback errors gracefully', async t => {
 				},
 			},
 		}),
-		{is: fallbackError},
+		thrown => thrown === fallbackError,
 	);
 });
 
-test('handles null condition return value', async t => {
-	await t.throwsAsync(
+test('handles null condition return value', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => null),
-		{instanceOf: TypeError, message: 'Expected condition to return a boolean'},
+		{name: 'TypeError', message: 'Expected condition to return a boolean'},
 	);
 });
 
-test('handles undefined condition return value', async t => {
-	await t.throwsAsync(
+test('handles undefined condition return value', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => undefined),
-		{instanceOf: TypeError, message: 'Expected condition to return a boolean'},
+		{name: 'TypeError', message: 'Expected condition to return a boolean'},
 	);
 });
 
-test('handles promise rejection in condition', async t => {
+test('handles promise rejection in condition', {timeout: 30_000}, async t => {
 	const conditionError = new Error('Condition failed');
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(async () => {
 			throw conditionError;
 		}),
-		{is: conditionError},
+		thrown => thrown === conditionError,
 	);
 });
 
-test('works with zero interval', async t => {
+test('works with zero interval', {timeout: 30_000}, async t => {
 	let checks = 0;
 
 	await pWaitFor(() => {
@@ -457,17 +469,17 @@ test('works with zero interval', async t => {
 		interval: 0,
 	});
 
-	t.true(checks >= 3);
+	t.assert.ok(checks >= 3);
 });
 
-test('resolveWith with falsy values', async t => {
-	t.is(await pWaitFor(() => pWaitFor.resolveWith(0)), 0);
-	t.is(await pWaitFor(() => pWaitFor.resolveWith('')), '');
-	t.is(await pWaitFor(() => pWaitFor.resolveWith(false)), false);
-	t.is(await pWaitFor(() => pWaitFor.resolveWith(null)), null);
+test('resolveWith with falsy values', {timeout: 30_000}, async t => {
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith(0)), 0);
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith('')), '');
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith(false)), false);
+	t.assert.strictEqual(await pWaitFor(() => pWaitFor.resolveWith(null)), null);
 });
 
-test('multiple simultaneous waits with same condition', async t => {
+test('multiple simultaneous waits with same condition', {timeout: 30_000}, async t => {
 	let counter = 0;
 	const condition = () => {
 		counter++;
@@ -480,11 +492,11 @@ test('multiple simultaneous waits with same condition', async t => {
 		pWaitFor(condition),
 	]);
 
-	t.deepEqual(results, [undefined, undefined, undefined]);
-	t.true(counter >= 10);
+	t.assert.deepStrictEqual(results, [undefined, undefined, undefined]);
+	t.assert.ok(counter >= 10);
 });
 
-test('signal abort reason is preserved', async t => {
+test('signal abort reason is preserved', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 	const customReason = new Error('Custom abort reason');
 	customReason.type = 'custom';
@@ -493,32 +505,32 @@ test('signal abort reason is preserved', async t => {
 		controller.abort(customReason);
 	}, 50);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			signal: controller.signal,
 		}),
-		{is: customReason},
+		thrown => thrown === customReason,
 	);
 });
 
-test('condition can return truthy non-boolean values that get rejected', async t => {
-	await t.throwsAsync(
+test('condition can return truthy non-boolean values that get rejected', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => 'truthy string'),
-		{instanceOf: TypeError, message: 'Expected condition to return a boolean'},
+		{name: 'TypeError', message: 'Expected condition to return a boolean'},
 	);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => 42),
-		{instanceOf: TypeError, message: 'Expected condition to return a boolean'},
+		{name: 'TypeError', message: 'Expected condition to return a boolean'},
 	);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => []),
-		{instanceOf: TypeError, message: 'Expected condition to return a boolean'},
+		{name: 'TypeError', message: 'Expected condition to return a boolean'},
 	);
 });
 
-test('timeout with Infinity milliseconds never times out', async t => {
+test('timeout with Infinity milliseconds never times out', {timeout: 30_000}, async t => {
 	let checks = 0;
 
 	await pWaitFor(() => {
@@ -526,14 +538,14 @@ test('timeout with Infinity milliseconds never times out', async t => {
 		return checks >= 3;
 	}, {
 		timeout: {
-			milliseconds: Number.POSITIVE_INFINITY,
+			milliseconds: Infinity,
 		},
 	});
 
-	t.true(checks >= 3);
+	t.assert.ok(checks >= 3);
 });
 
-test('fallback returns undefined works', async t => {
+test('fallback returns undefined works', {timeout: 30_000}, async t => {
 	const result = await pWaitFor(() => false, {
 		timeout: {
 			milliseconds: 50,
@@ -541,10 +553,10 @@ test('fallback returns undefined works', async t => {
 		},
 	});
 
-	t.is(result, undefined);
+	t.assert.strictEqual(result, undefined);
 });
 
-test('before false delays first check exactly', async t => {
+test('before false delays first check exactly', {timeout: 30_000}, async t => {
 	const start = Date.now();
 	let firstCheckTime;
 
@@ -556,28 +568,28 @@ test('before false delays first check exactly', async t => {
 		before: false,
 	});
 
-	const delay = firstCheckTime - start;
-	t.true(delay >= 95); // Allow 5ms margin
+	const elapsed = firstCheckTime - start;
+	t.assert.ok(elapsed >= 95); // Allow 5ms margin
 });
 
-test('abort before first check', async t => {
+test('abort before first check', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 	controller.abort(new Error('Aborted before start'));
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => true, {signal: controller.signal}),
 		{message: 'Aborted before start'},
 	);
 });
 
-test('abort during sleep between checks', async t => {
+test('abort during sleep between checks', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 
 	setTimeout(() => {
 		controller.abort(new Error('Aborted during sleep'));
 	}, 50);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			interval: 100,
 			signal: controller.signal,
@@ -586,14 +598,14 @@ test('abort during sleep between checks', async t => {
 	);
 });
 
-test('abort while condition is pending', async t => {
+test('abort while condition is pending', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 
 	setTimeout(() => {
 		controller.abort(new Error('Aborted during condition'));
 	}, 50);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(async () => {
 			await delay(100); // This will be interrupted by the next iteration
 			return false; // Force another iteration where abort will be caught
@@ -604,14 +616,14 @@ test('abort while condition is pending', async t => {
 	);
 });
 
-test('fallback not used on abort', async t => {
+test('fallback not used on abort', {timeout: 30_000}, async t => {
 	const controller = new AbortController();
 
 	setTimeout(() => {
 		controller.abort(new Error('User abort'));
 	}, 50);
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: {
 				milliseconds: 200,
@@ -623,7 +635,7 @@ test('fallback not used on abort', async t => {
 	);
 });
 
-test('sentinel short-circuit on first call', async t => {
+test('sentinel short-circuit on first call', {timeout: 30_000}, async t => {
 	let checks = 0;
 
 	const result = await pWaitFor(() => {
@@ -631,11 +643,11 @@ test('sentinel short-circuit on first call', async t => {
 		return pWaitFor.resolveWith('immediate');
 	});
 
-	t.is(result, 'immediate');
-	t.is(checks, 1);
+	t.assert.strictEqual(result, 'immediate');
+	t.assert.strictEqual(checks, 1);
 });
 
-test('timeout message as Error instance', async t => {
+test('timeout message as Error instance', {timeout: 30_000}, async t => {
 	class CustomTimeoutError extends Error {
 		constructor() {
 			super('Custom timeout occurred');
@@ -645,19 +657,19 @@ test('timeout message as Error instance', async t => {
 
 	const customError = new CustomTimeoutError();
 
-	await t.throwsAsync(
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: {
 				milliseconds: 50,
 				message: customError,
 			},
 		}),
-		{is: customError},
+		thrown => thrown === customError,
 	);
 });
 
-test('timeout message as string', async t => {
-	await t.throwsAsync(
+test('timeout message as string', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
 		pWaitFor(() => false, {
 			timeout: {
 				milliseconds: 50,
@@ -668,20 +680,20 @@ test('timeout message as string', async t => {
 	);
 });
 
-test('removes the abort listener once each poll settles', async t => {
+test('removes the abort listener once each poll settles', {timeout: 30_000}, async t => {
 	// `once: true` only detaches on abort, so every completed poll left a listener holding its timer.
 	const controller = new AbortController();
 	const {signal} = controller;
 
 	let polls = 0;
 	await pWaitFor(() => ++polls >= 200, {interval: 0, signal});
-	t.is(abortListenerCount(signal), 0);
+	t.assert.strictEqual(abortListenerCount(signal), 0);
 
 	await pWaitFor(() => true, {interval: 0, signal});
-	t.is(abortListenerCount(signal), 0);
+	t.assert.strictEqual(abortListenerCount(signal), 0);
 
 	// An abort still rejects a pending wait.
 	const pending = pWaitFor(() => false, {interval: 5, signal});
 	controller.abort(new Error('stop'));
-	await t.throwsAsync(pending, {message: 'stop'});
+	await t.assert.rejects(pending, {message: 'stop'});
 });

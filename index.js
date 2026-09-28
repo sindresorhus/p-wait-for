@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop, complexity */
+/* eslint-disable no-await-in-loop, complexity -- Polling loop: each iteration must await the previous check before sleeping again. */
 const resolveValue = Symbol('resolveValue');
 
 const sleep = (ms, signal) => new Promise((resolve, reject) => {
@@ -71,7 +71,7 @@ const handleAbortError = (timeoutSignal, timeout, signal) => {
 export default async function pWaitFor(condition, options = {}) {
 	const {
 		interval = 20,
-		timeout = Number.POSITIVE_INFINITY,
+		timeout = Infinity,
 		before = true,
 		signal,
 	} = options;
@@ -79,8 +79,8 @@ export default async function pWaitFor(condition, options = {}) {
 	validateOptions(interval, timeout);
 
 	// Create combined signal
-	const timeoutMs = typeof timeout === 'number' ? timeout : timeout?.milliseconds ?? Number.POSITIVE_INFINITY;
-	const timeoutSignal = timeoutMs === Number.POSITIVE_INFINITY ? undefined : AbortSignal.timeout(timeoutMs);
+	const timeoutMs = typeof timeout === 'number' ? timeout : timeout?.milliseconds ?? Infinity;
+	const timeoutSignal = timeoutMs === Infinity ? undefined : AbortSignal.timeout(timeoutMs);
 	const combinedSignal = timeoutSignal && signal
 		? AbortSignal.any([timeoutSignal, signal])
 		: (timeoutSignal ?? signal);
@@ -110,7 +110,7 @@ export default async function pWaitFor(condition, options = {}) {
 			const value = await condition();
 
 			// Check for resolveWith value
-			if (typeof value === 'object' && value !== null && resolveValue in value) {
+			if (typeof value === 'object' && value !== null && Object.hasOwn(value, resolveValue)) {
 				return value[resolveValue];
 			}
 

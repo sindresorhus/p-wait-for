@@ -115,6 +115,8 @@ declare const pWaitFor: {
 export default pWaitFor;
 
 export class TimeoutError extends Error {
-	constructor(message?: string);
 	readonly name: 'TimeoutError';
+	constructor(message?: string);
 }
+
+export {}; // eslint-disable-line unicorn/require-module-specifiers -- It stops the implicit export of the declarations without `export`.
