@@ -1,5 +1,6 @@
 /* eslint-disable node-test/no-conditional-assertion -- The interval test is table-driven: every recorded gap is asserted inside the loop. */
 import {getEventListeners} from 'node:events';
+import process from 'node:process';
 import {setTimeout as delay} from 'node:timers/promises';
 import test from 'node:test';
 import timeSpan from 'time-span';
@@ -350,6 +351,8 @@ test('cleanup happens on error', {timeout: 30_000}, async t => {
 		signal: controller.signal,
 	}), {message: 'test'});
 
+	t.assert.strictEqual(abortListenerCount(controller.signal), 0);
+
 	// If cleanup didn't happen, this might cause issues
 	controller.abort();
 });
@@ -607,8 +610,8 @@ test('abort while condition is pending', {timeout: 30_000}, async t => {
 
 	await t.assert.rejects(
 		pWaitFor(async () => {
-			await delay(100); // This will be interrupted by the next iteration
-			return false; // Force another iteration where abort will be caught
+			await delay(100); // The abort settles the wait while this is pending
+			return false; // The orphaned poll then stops at the aborted sleep
 		}, {
 			signal: controller.signal,
 		}),
@@ -696,4 +699,140 @@ test('removes the abort listener once each poll settles', {timeout: 30_000}, asy
 	const pending = pWaitFor(() => false, {interval: 5, signal});
 	controller.abort(new Error('stop'));
 	await t.assert.rejects(pending, {message: 'stop'});
+});
+
+test('abort rejects while the condition is pending', {timeout: 30_000}, async t => {
+	const controller = new AbortController();
+	let checks = 0;
+
+	const waiting = pWaitFor(async () => {
+		checks++;
+		await delay(200);
+		return true;
+	}, {signal: controller.signal});
+
+	setTimeout(() => {
+		controller.abort(new Error('cancelled'));
+	}, 10);
+
+	const end = timeSpan();
+	await t.assert.rejects(waiting, {message: 'cancelled'});
+	t.assert.ok(end() < 150);
+	t.assert.strictEqual(checks, 1);
+});
+
+test('timeout rejects while the condition is pending', {timeout: 30_000}, async t => {
+	const end = timeSpan();
+
+	await t.assert.rejects(
+		pWaitFor(async () => {
+			await delay(200);
+			return true;
+		}, {timeout: 10}),
+		{name: 'TimeoutError'},
+	);
+
+	t.assert.ok(end() < 150);
+});
+
+test('timeout fallback runs while the condition is pending', {timeout: 30_000}, async t => {
+	const result = await pWaitFor(async () => {
+		await delay(200);
+		return true;
+	}, {
+		timeout: {
+			milliseconds: 10,
+			fallback: () => 'fallback',
+		},
+	});
+
+	t.assert.strictEqual(result, 'fallback');
+});
+
+test('a condition that settles after abort is not called again', {timeout: 30_000}, async t => {
+	const controller = new AbortController();
+	let checks = 0;
+
+	const waiting = pWaitFor(async () => {
+		checks++;
+		await delay(50);
+		return false;
+	}, {interval: 0, signal: controller.signal});
+
+	controller.abort(new Error('cancelled'));
+	await t.assert.rejects(waiting, {message: 'cancelled'});
+
+	await delay(150);
+	t.assert.strictEqual(checks, 1);
+	t.assert.strictEqual(abortListenerCount(controller.signal), 0);
+});
+
+test('a condition that rejects after abort does not cause an unhandled rejection', {timeout: 30_000}, async t => {
+	const controller = new AbortController();
+	const unhandled = [];
+	const onUnhandledRejection = reason => {
+		unhandled.push(reason);
+	};
+
+	process.on('unhandledRejection', onUnhandledRejection);
+	t.after(() => {
+		process.off('unhandledRejection', onUnhandledRejection);
+	});
+
+	const waiting = pWaitFor(async () => {
+		await delay(50);
+		throw new Error('late failure');
+	}, {signal: controller.signal});
+
+	controller.abort(new Error('cancelled'));
+	await t.assert.rejects(waiting, {message: 'cancelled'});
+
+	await delay(150);
+	t.assert.deepStrictEqual(unhandled, []);
+});
+
+test('timeout and signal together settle the wait while the condition is pending', {timeout: 30_000}, async t => {
+	const slowCondition = async () => {
+		await delay(200);
+		return true;
+	};
+
+	await t.assert.rejects(
+		pWaitFor(slowCondition, {timeout: 10, signal: new AbortController().signal}),
+		{name: 'TimeoutError'},
+	);
+
+	const controller = new AbortController();
+	const waiting = pWaitFor(slowCondition, {timeout: 60_000, signal: controller.signal});
+	controller.abort(new Error('cancelled'));
+	await t.assert.rejects(waiting, {message: 'cancelled'});
+});
+
+test('abort during the initial `before: false` delay never calls the condition', {timeout: 30_000}, async t => {
+	const controller = new AbortController();
+	let checks = 0;
+
+	const waiting = pWaitFor(() => {
+		checks++;
+		return true;
+	}, {
+		before: false,
+		interval: 50,
+		signal: controller.signal,
+	});
+
+	controller.abort(new Error('cancelled'));
+	await t.assert.rejects(waiting, {message: 'cancelled'});
+
+	await delay(100);
+	t.assert.strictEqual(checks, 0);
+});
+
+test('a condition that throws `undefined` rejects with it when a timeout is set', {timeout: 30_000}, async t => {
+	await t.assert.rejects(
+		pWaitFor(() => {
+			throw undefined; // eslint-disable-line no-throw-literal -- An `undefined` error must not be mistaken for the unset `signal.reason`.
+		}, {timeout: 1000}),
+		thrown => thrown === undefined,
+	);
 });

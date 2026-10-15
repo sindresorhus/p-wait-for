@@ -1,4 +1,4 @@
-/* eslint-disable no-await-in-loop, complexity -- Polling loop: each iteration must await the previous check before sleeping again. */
+/* eslint-disable no-await-in-loop -- Polling loop: each iteration must await the previous check before sleeping again. */
 const resolveValue = Symbol('resolveValue');
 
 const sleep = (ms, signal) => new Promise((resolve, reject) => {
@@ -85,28 +85,15 @@ export default async function pWaitFor(condition, options = {}) {
 		? AbortSignal.any([timeoutSignal, signal])
 		: (timeoutSignal ?? signal);
 
-	// Handle initial delay
-	if (!before) {
-		try {
+	const poll = async () => {
+		// Handle initial delay
+		if (!before) {
+			// The timeout or the user abort can expire here, before `condition` ever runs. The race below handles it.
 			await sleep(interval, combinedSignal);
-		} catch (error) {
-			// The timeout or the user abort can expire here, before `condition` ever runs.
-			if (error === combinedSignal?.reason) {
-				return handleAbortError(timeoutSignal, timeout, signal);
-			}
-
-			throw error;
 		}
-	}
 
-	// Check for pre-abort
-	if (combinedSignal?.aborted) {
-		return handleAbortError(timeoutSignal, timeout, signal);
-	}
-
-	// Main loop
-	while (true) {
-		try {
+		// Main loop
+		while (true) {
 			const value = await condition();
 
 			// Check for resolveWith value
@@ -119,20 +106,45 @@ export default async function pWaitFor(condition, options = {}) {
 			}
 
 			if (value === false) {
+				// The sleep observes the signal, so an orphaned poll stops here instead of calling `condition` again.
 				await sleep(interval, combinedSignal);
 				continue;
 			}
 
 			throw new TypeError('Expected condition to return a boolean');
-		} catch (error) {
-			// Handle timeout vs abort vs condition error
-			if (error === combinedSignal?.reason) {
-				return handleAbortError(timeoutSignal, timeout, signal);
-			}
-
-			// Some other error from condition()
-			throw error;
 		}
+	};
+
+	if (!combinedSignal) {
+		return poll();
+	}
+
+	// Check for pre-abort
+	if (combinedSignal.aborted) {
+		return handleAbortError(timeoutSignal, timeout, signal);
+	}
+
+	// Race the poll against the signal so an abort settles the wait even while `condition` is pending. The pending `condition` is not cancelled.
+	const {promise: abortPromise, reject} = Promise.withResolvers();
+	const onAbort = () => {
+		reject(combinedSignal.reason);
+	};
+
+	combinedSignal.addEventListener('abort', onAbort, {once: true});
+
+	try {
+		return await Promise.race([poll(), abortPromise]);
+	} catch (error) {
+		// Handle timeout vs abort vs condition error
+		if (combinedSignal.aborted && error === combinedSignal.reason) {
+			return handleAbortError(timeoutSignal, timeout, signal);
+		}
+
+		// Some other error from condition()
+		throw error;
+	} finally {
+		// `once: true` only detaches the listener when the signal aborts, so a settled wait has to remove it.
+		combinedSignal.removeEventListener('abort', onAbort);
 	}
 }
 

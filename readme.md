@@ -52,6 +52,8 @@ Number of milliseconds to wait before automatically rejecting with a `TimeoutErr
 
 You can customize the timeout `Error` by specifying `TimeoutOptions`.
 
+A pending `condition` is not cancelled; its eventual result or error is ignored.
+
 ```js
 import pWaitFor from 'p-wait-for';
 import {pathExists} from 'path-exists';
@@ -123,6 +125,8 @@ Useful for when the check, if run immediately, would likely return `false`. In t
 Type: `AbortSignal`
 
 An `AbortSignal` to cancel the wait operation.
+
+A pending `condition` is not cancelled; its eventual result or error is ignored.
 
 ### pWaitFor.resolveWith(value)
 
