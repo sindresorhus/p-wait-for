@@ -30,10 +30,10 @@ const validateOptions = (interval, timeout) => {
 
 	if (typeof timeout === 'object' && timeout !== null) {
 		if (typeof timeout.milliseconds !== 'number' || Number.isNaN(timeout.milliseconds) || timeout.milliseconds < 0) {
-			throw new TypeError('Expected timeout.milliseconds to be a finite non-negative number');
+			throw new TypeError('Expected timeout.milliseconds to be a non-negative number');
 		}
 	} else if (typeof timeout === 'number' && (Number.isNaN(timeout) || timeout < 0)) {
-		throw new TypeError('Expected timeout to be a finite non-negative number');
+		throw new TypeError('Expected timeout to be a non-negative number');
 	}
 };
 

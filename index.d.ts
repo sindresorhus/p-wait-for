@@ -1,6 +1,8 @@
 export type TimeoutOptions<ResolveValueType> = {
 	/**
 	Milliseconds before timing out.
+
+	Passing `Infinity` will cause it to never time out.
 	*/
 	readonly milliseconds: number;
 
@@ -8,6 +10,8 @@ export type TimeoutOptions<ResolveValueType> = {
 	Specify a custom error message or error.
 
 	If not specified, the default error message will be 'Promise timed out after {milliseconds} milliseconds' where {milliseconds} is replaced with the actual timeout value.
+
+	If you do a custom error, it's recommended to sub-class `TimeoutError`.
 	*/
 	readonly message?: string | Error;
 
@@ -15,8 +19,26 @@ export type TimeoutOptions<ResolveValueType> = {
 	Do something other than rejecting with an error on timeout.
 
 	You could for example retry with more attempts.
+
+	@example
+	```
+	import pWaitFor from 'p-wait-for';
+	import {pathExists} from 'path-exists';
+
+	const result = await pWaitFor(() => pathExists('unicorn.png'), {
+		timeout: {
+			milliseconds: 50,
+			fallback: () => {
+				console.log('Time’s up! Executed the fallback function.');
+				return 'default-value';
+			},
+		}
+	});
+
+	console.log(result); // 'default-value'
+	```
 	*/
-	readonly fallback?: () => ResolveValueType;
+	readonly fallback?: () => ResolveValueType | PromiseLike<ResolveValueType>;
 };
 
 export type Options<ResolveValueType> = {
@@ -44,7 +66,7 @@ export type Options<ResolveValueType> = {
 	await pWaitFor(() => pathExists('unicorn.png'), {
 		timeout: {
 			milliseconds: 100,
-			message: new Error('Time's up!')
+			message: new Error('Time’s up!')
 		}
 	});
 

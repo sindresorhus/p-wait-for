@@ -364,7 +364,7 @@ test('throws on invalid timeout.milliseconds', {timeout: 30_000}, async t => {
 				message: 'custom message',
 			},
 		}),
-		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a non-negative number'},
 	);
 });
 
@@ -392,14 +392,14 @@ test('throws on Infinity interval', {timeout: 30_000}, async t => {
 test('throws on negative timeout', {timeout: 30_000}, async t => {
 	await t.assert.rejects(
 		pWaitFor(() => true, {timeout: -100}),
-		{name: 'TypeError', message: 'Expected timeout to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout to be a non-negative number'},
 	);
 });
 
 test('throws on NaN timeout', {timeout: 30_000}, async t => {
 	await t.assert.rejects(
 		pWaitFor(() => true, {timeout: NaN}),
-		{name: 'TypeError', message: 'Expected timeout to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout to be a non-negative number'},
 	);
 });
 
@@ -408,7 +408,7 @@ test('throws on negative timeout.milliseconds', {timeout: 30_000}, async t => {
 		pWaitFor(() => true, {
 			timeout: {milliseconds: -100},
 		}),
-		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a non-negative number'},
 	);
 });
 
@@ -417,7 +417,7 @@ test('throws on NaN timeout.milliseconds', {timeout: 30_000}, async t => {
 		pWaitFor(() => true, {
 			timeout: {milliseconds: NaN},
 		}),
-		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a finite non-negative number'},
+		{name: 'TypeError', message: 'Expected timeout.milliseconds to be a non-negative number'},
 	);
 });
 
